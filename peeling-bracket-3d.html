@@ -306,9 +306,11 @@ addMesh(actuator, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, elbowY
 addMesh(actuator, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, elbowY + 0.10, 0);
 
 const rodBase = elbowY + 0.144;
-addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, 0.09, 16), matRod, 0, rodBase + 0.045, 0, { castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodBase + 0.096, 0);
-addMesh(actuator, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodBase + 0.096, 0, { rx: Math.PI/2 });
+const rodTopLocal = (H + P + P/2) - P/2 - P;
+const rodLen = rodTopLocal - rodBase - 0.006;
+addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, rodBase + rodLen/2, 0, { castShadow: true });
+addMesh(actuator, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
+addMesh(actuator, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodTopLocal, 0, { rx: Math.PI/2 });
 
 addMesh(actuator, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, 0.026, 0.025, mz + 0.028);
 addMesh(actuator, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 0.042, 0.025, mz + 0.028, { rz: Math.PI/2 });
