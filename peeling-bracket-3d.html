@@ -293,16 +293,18 @@ addMesh(actuator, new THREE.BoxGeometry(0.06, 0.007, 0.08), matAluminum, 0, 0.00
 
 const motorH = 0.032;
 const motorCy = plateTop + motorH / 2;
-addMesh(actuator, new THREE.BoxGeometry(0.048, motorH, 0.042), matActCap, 0, motorCy, mz, { castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.018, 0.018, 0.048, 20), matActBody, 0, motorCy, mz, { rx: Math.PI/2, castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, mz + 0.026, { rx: Math.PI/2 });
-addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, mz - 0.026, { rx: Math.PI/2 });
-addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, 0.012, 12), matRod, 0, motorCy, mz + 0.030, { rx: Math.PI/2 });
+const motorZLen = 0.077;
+const motorCz = mz + 0.024 - motorZLen / 2;
+addMesh(actuator, new THREE.BoxGeometry(0.048, motorH, 0.067), matActCap, 0, motorCy, motorCz, { castShadow: true });
+addMesh(actuator, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2, castShadow: true });
+addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz + motorZLen/2 + 0.002, { rx: Math.PI/2 });
+addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz - motorZLen/2 - 0.002, { rx: Math.PI/2 });
+addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, 0.012, 12), matRod, 0, motorCy, motorCz + motorZLen/2 + 0.006, { rx: Math.PI/2 });
 
 const motorTop = plateTop + motorH;
 const elbowH = 0.014;
 const elbowCy = motorTop + elbowH / 2;
-addMesh(actuator, new THREE.BoxGeometry(0.042, elbowH, 0.052), matActCap, 0, elbowCy, mz * 0.5, { castShadow: true });
+addMesh(actuator, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, elbowCy, motorCz * 0.4, { castShadow: true });
 
 const bodyBot = motorTop + elbowH;
 const bodyH = 0.13;
@@ -321,8 +323,8 @@ addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 
 addMesh(actuator, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
 addMesh(actuator, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodTopLocal, 0, { rx: Math.PI/2 });
 
-addMesh(actuator, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, 0.026, motorCy, mz + 0.028);
-addMesh(actuator, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 0.042, motorCy, mz + 0.028, { rz: Math.PI/2 });
+addMesh(actuator, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, 0.026, motorCy, motorCz + motorZLen/2 + 0.004);
+addMesh(actuator, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 0.042, motorCy, motorCz + motorZLen/2 + 0.004, { rz: Math.PI/2 });
 
 actuator.position.set(0, P, 0);
 bracket.add(actuator);
