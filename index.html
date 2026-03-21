@@ -71,6 +71,20 @@
             backdrop-filter: blur(6px);
         }
         #view-bar button:hover { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+        #view-bar button.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+
+        #mode-bar {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; gap: 0; z-index: 10;
+        }
+        #mode-bar button {
+            padding: 8px 18px; border: 1px solid #ddd; background: rgba(255,255,255,0.94);
+            color: #777; font-size: 12.5px; font-family: inherit; cursor: pointer;
+            transition: all 0.15s; backdrop-filter: blur(6px);
+        }
+        #mode-bar button:first-child { border-radius: 8px 0 0 8px; }
+        #mode-bar button:last-child { border-radius: 0 8px 8px 0; border-left: none; }
+        #mode-bar button.active { background: #4a90d9; color: #fff; border-color: #4a90d9; }
     </style>
 </head>
 <body>
@@ -101,6 +115,11 @@
     <div class="sel-name" id="sel-name-text"></div>
     <button id="btn-delete">删除此组件</button>
     <button id="btn-deselect">取消选择</button>
+</div>
+
+<div id="mode-bar">
+    <button id="btn-lite" class="active">简洁版</button>
+    <button id="btn-full">完整框架版</button>
 </div>
 
 <div id="view-bar">
@@ -229,17 +248,18 @@ placeProfile(W - 2*P, 'z', -0.025, P/2, 0, '推杆支撑型材(左)');
 placeProfile(W - 2*P, 'z',  0.025, P/2, 0, '推杆支撑型材(右)');
 
 /* --- Vertical Posts --- */
+const frameParts = [];
 const vLen = H - P;
 [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([sx, sz], i) => {
-    placeProfile(vLen, 'y', sx*(L/2-P/2), P + vLen/2, sz*(W/2-P/2), `立柱${i+1}`);
+    frameParts.push(placeProfile(vLen, 'y', sx*(L/2-P/2), P + vLen/2, sz*(W/2-P/2), `立柱${i+1}`));
 });
 
 /* --- Top Frame --- */
 const topY = H + P/2;
-placeProfile(L, 'x', 0, topY, -W/2 + P/2, '顶部长型材(前)');
-placeProfile(L, 'x', 0, topY,  W/2 - P/2, '顶部长型材(后)');
-placeProfile(W - 2*P, 'z', -L/2 + P/2, topY, 0, '顶部横撑(左)');
-placeProfile(W - 2*P, 'z',  L/2 - P/2, topY, 0, '顶部横撑(右)');
+frameParts.push(placeProfile(L, 'x', 0, topY, -W/2 + P/2, '顶部长型材(前)'));
+frameParts.push(placeProfile(L, 'x', 0, topY,  W/2 - P/2, '顶部长型材(后)'));
+frameParts.push(placeProfile(W - 2*P, 'z', -L/2 + P/2, topY, 0, '顶部横撑(左)'));
+frameParts.push(placeProfile(W - 2*P, 'z',  L/2 - P/2, topY, 0, '顶部横撑(右)'));
 
 /* --- Corner Brackets --- */
 function makeCornerBracket(px, py, pz, rotY) {
@@ -249,11 +269,15 @@ function makeCornerBracket(px, py, pz, rotY) {
     addMesh(g, new THREE.BoxGeometry(0.003, 0.020, 0.020), matPlate, 0.0085, 0, 0);
     g.position.set(px, py, pz); g.rotation.y = rotY;
     bracket.add(g);
+    return g;
 }
 [[-1,-1,0],[-1,1,Math.PI/2],[1,-1,-Math.PI/2],[1,1,Math.PI]].forEach(([sx,sz,ry]) => {
-    makeCornerBracket(sx*(L/2-P/2), P, sz*(W/2-P/2), ry);
-    makeCornerBracket(sx*(L/2-P/2), H, sz*(W/2-P/2), ry);
+    frameParts.push(makeCornerBracket(sx*(L/2-P/2), P, sz*(W/2-P/2), ry));
+    frameParts.push(makeCornerBracket(sx*(L/2-P/2), H, sz*(W/2-P/2), ry));
 });
+
+/* --- Default: hide frame (lite mode) --- */
+frameParts.forEach(p => { p.visible = false; });
 
 /* ========== Electric Linear Actuator (电动推杆 — 方形) ========== */
 const actuator = new THREE.Group();
@@ -494,6 +518,18 @@ addEventListener('keydown', e => {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedGroup) { e.preventDefault(); deleteSelected(); }
     if (e.key === 'Escape') clearSelection();
 });
+
+/* ========== Frame Toggle ========== */
+const btnLite = document.getElementById('btn-lite');
+const btnFull = document.getElementById('btn-full');
+
+function setFrameMode(showFrame) {
+    frameParts.forEach(p => { p.visible = showFrame; });
+    btnLite.classList.toggle('active', !showFrame);
+    btnFull.classList.toggle('active', showFrame);
+}
+btnLite.addEventListener('click', () => setFrameMode(false));
+btnFull.addEventListener('click', () => setFrameMode(true));
 
 /* ========== Standard Views ========== */
 const viewTarget = new THREE.Vector3(0, 0.18, 0);
