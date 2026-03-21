@@ -58,6 +58,19 @@
         #btn-delete:hover { background: #c0392b; }
         #btn-deselect { background: #ecf0f1; color: #666; }
         #btn-deselect:hover { background: #dfe6e9; }
+
+        #view-bar {
+            position: absolute; bottom: 50px; right: 20px;
+            display: flex; flex-direction: column; gap: 6px; z-index: 10;
+        }
+        #view-bar button {
+            width: 72px; padding: 8px 0; border: 1px solid #ddd; border-radius: 8px;
+            background: rgba(255,255,255,0.94); color: #555; font-size: 12px;
+            font-family: inherit; cursor: pointer; letter-spacing: 0.5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.06); transition: all 0.15s;
+            backdrop-filter: blur(6px);
+        }
+        #view-bar button:hover { background: #4a90d9; color: #fff; border-color: #4a90d9; }
     </style>
 </head>
 <body>
@@ -88,6 +101,12 @@
     <div class="sel-name" id="sel-name-text"></div>
     <button id="btn-delete">删除此组件</button>
     <button id="btn-deselect">取消选择</button>
+</div>
+
+<div id="view-bar">
+    <button id="btn-front">前视图</button>
+    <button id="btn-left">左视图</button>
+    <button id="btn-top">上视图</button>
 </div>
 
 <div id="hint">左键旋转 | 右键平移 | 滚轮缩放 | 单击选中 | Delete 删除</div>
@@ -474,6 +493,36 @@ document.getElementById('btn-deselect').addEventListener('click', clearSelection
 addEventListener('keydown', e => {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedGroup) { e.preventDefault(); deleteSelected(); }
     if (e.key === 'Escape') clearSelection();
+});
+
+/* ========== Standard Views ========== */
+const viewTarget = new THREE.Vector3(0, 0.18, 0);
+const viewDist = 0.75;
+
+function animateCamera(pos) {
+    const start = camera.position.clone();
+    const end = new THREE.Vector3(...pos);
+    const dur = 400;
+    const t0 = performance.now();
+    function tick() {
+        const t = Math.min((performance.now() - t0) / dur, 1);
+        const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+        camera.position.lerpVectors(start, end, ease);
+        controls.target.copy(viewTarget);
+        controls.update();
+        if (t < 1) requestAnimationFrame(tick);
+    }
+    tick();
+}
+
+document.getElementById('btn-front').addEventListener('click', () => {
+    animateCamera([0, viewTarget.y, viewDist]);
+});
+document.getElementById('btn-left').addEventListener('click', () => {
+    animateCamera([-viewDist, viewTarget.y, 0]);
+});
+document.getElementById('btn-top').addEventListener('click', () => {
+    animateCamera([0, viewTarget.y + viewDist, 0.001]);
 });
 
 /* ========== Render Loop ========== */
