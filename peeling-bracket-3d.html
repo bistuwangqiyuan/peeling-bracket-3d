@@ -308,8 +308,8 @@ function makePeelLineAssembly(sign, label) {
     g.userData.partName = label;
     const x = sign * peelSpacing;
 
-    const sensorCy = peelTopY - 0.05;
-    const clampCy  = sensorCy - 0.03;
+    const sensorCy = peelTopY - 0.15;
+    const clampCy  = sensorCy - 0.09;
     const tapeTopY = clampCy - 0.018;
     const tapeLen  = 0.15;
     const tapeMidY = tapeTopY - tapeLen / 2;
@@ -372,16 +372,16 @@ bracket.add(makeLabel('电动推杆', 0.07, P + 0.12, 0.05, '#c0392b'));
 bracket.add(makeLabel('横梁 500mm', BL/2 + 0.04, beamY, 0, '#1e8449'));
 bracket.add(makeLabel('3030铝型材', L/2 + 0.05, P/2, -W/2, '#7d3c98'));
 
-const sLabelY = peelTopY - 0.06;
+const sLabelY = peelTopY - 0.15;
 bracket.add(makeLabel('力传感器', -peelSpacing - 0.06, sLabelY, 0.03, '#2c6fbb'));
 bracket.add(makeLabel('力传感器', peelSpacing + 0.06, sLabelY, 0.03, '#2c6fbb'));
 
-const cLabelY = peelTopY - 0.12;
+const cLabelY = peelTopY - 0.24;
 bracket.add(makeLabel('钳形夹具', -peelSpacing - 0.06, cLabelY, 0.03, '#d35400'));
 bracket.add(makeLabel('钳形夹具', peelSpacing + 0.06, cLabelY, 0.03, '#d35400'));
 
-bracket.add(makeLabel('黑色胶带', -peelSpacing - 0.06, peelTopY - 0.15, 0.03, '#333'));
-bracket.add(makeLabel('黑色胶带', peelSpacing + 0.06, peelTopY - 0.15, 0.03, '#333'));
+bracket.add(makeLabel('黑色胶带', -peelSpacing - 0.06, peelTopY - 0.35, 0.03, '#333'));
+bracket.add(makeLabel('黑色胶带', peelSpacing + 0.06, peelTopY - 0.35, 0.03, '#333'));
 
 /* ========== Dimension Lines ========== */
 function makeDimLine(ax, ay, az, bx, by, bz, label, ox, oy, oz) {
