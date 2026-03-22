@@ -117,7 +117,7 @@
     <div class="info-row"><span class="lbl">支架宽度</span><span class="val">120 mm</span></div>
     <div class="info-row"><span class="lbl">支架高度</span><span class="val">300 mm</span></div>
     <div class="info-row"><span class="lbl">横梁</span><span class="val">500 × 30 × 10 mm</span></div>
-    <div class="info-row"><span class="lbl">驱动方式</span><span class="val">电动推杆</span></div>
+    <div class="info-row"><span class="lbl">驱动方式</span><span class="val">双电动推杆(抬杠式)</span></div>
     <div class="info-row"><span class="lbl">力传感器</span><span class="val">椭圆形 ×2</span></div>
     <div class="info-row"><span class="lbl">夹具</span><span class="val">钳形 2cm ×2</span></div>
     <div class="info-row"><span class="lbl">支撑轮</span><span class="val">62mm 高 ×4</span></div>
@@ -268,8 +268,11 @@ placeProfile(L, 'x', 0, P/2, -W/2 + P/2, '底座长型材(前)');
 placeProfile(L, 'x', 0, P/2,  W/2 - P/2, '底座长型材(后)');
 placeProfile(W - 2*P, 'z', -L/2 + P/2, P/2, 0, '底座横撑(左)');
 placeProfile(W - 2*P, 'z',  L/2 - P/2, P/2, 0, '底座横撑(右)');
-placeProfile(W - 2*P, 'z', -0.025, P/2, 0, '推杆支撑型材(左)');
-placeProfile(W - 2*P, 'z',  0.025, P/2, 0, '推杆支撑型材(右)');
+const actSpacing = 0.18;
+placeProfile(W - 2*P, 'z', -actSpacing - 0.025, P/2, 0, '左推杆支撑型材(外)');
+placeProfile(W - 2*P, 'z', -actSpacing + 0.025, P/2, 0, '左推杆支撑型材(内)');
+placeProfile(W - 2*P, 'z',  actSpacing - 0.025, P/2, 0, '右推杆支撑型材(内)');
+placeProfile(W - 2*P, 'z',  actSpacing + 0.025, P/2, 0, '右推杆支撑型材(外)');
 
 /* --- Vertical Posts --- */
 const frameParts = [];
@@ -303,55 +306,62 @@ function makeCornerBracket(px, py, pz, rotY) {
 /* --- Default: hide frame (lite mode) --- */
 frameParts.forEach(p => { p.visible = false; });
 
-/* ========== Electric Linear Actuator (电动推杆 — L型折返式) ========== */
-const actuator = new THREE.Group();
-actuator.userData.partName = '电动推杆';
+/* ========== Electric Linear Actuators (双电动推杆 — 抬杠式左右对称) ========== */
+function makeActuator(xPos, label) {
+    const act = new THREE.Group();
+    act.userData.partName = label;
 
-const mz = 0.035;
-const plateTop = 0.007;
+    const mz = 0.035;
+    const plateTop = 0.007;
 
-addMesh(actuator, new THREE.BoxGeometry(0.06, 0.007, 0.08), matAluminum, 0, 0.0035, mz / 2, { castShadow: true });
-[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
-    addMesh(actuator, new THREE.CylinderGeometry(0.003, 0.003, 0.01, 8), matBolt, sx*0.024, 0.003, sz*0.032 + mz/2);
-});
+    addMesh(act, new THREE.BoxGeometry(0.06, 0.007, 0.08), matAluminum, 0, 0.0035, mz / 2, { castShadow: true });
+    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
+        addMesh(act, new THREE.CylinderGeometry(0.003, 0.003, 0.01, 8), matBolt, sx*0.024, 0.003, sz*0.032 + mz/2);
+    });
 
-const motorH = 0.032;
-const motorCy = plateTop + motorH / 2;
-const motorZLen = 0.077;
-const motorCz = mz + 0.024 - motorZLen / 2;
-addMesh(actuator, new THREE.BoxGeometry(0.048, motorH, 0.067), matActCap, 0, motorCy, motorCz, { castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2, castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz + motorZLen/2 + 0.002, { rx: Math.PI/2 });
-addMesh(actuator, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz - motorZLen/2 - 0.002, { rx: Math.PI/2 });
-addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, 0.012, 12), matRod, 0, motorCy, motorCz + motorZLen/2 + 0.006, { rx: Math.PI/2 });
+    const motorH = 0.032;
+    const motorCy = plateTop + motorH / 2;
+    const motorZLen = 0.077;
+    const motorCz = mz + 0.024 - motorZLen / 2;
+    addMesh(act, new THREE.BoxGeometry(0.048, motorH, 0.067), matActCap, 0, motorCy, motorCz, { castShadow: true });
+    addMesh(act, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2, castShadow: true });
+    addMesh(act, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz + motorZLen/2 + 0.002, { rx: Math.PI/2 });
+    addMesh(act, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz - motorZLen/2 - 0.002, { rx: Math.PI/2 });
+    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, 0.012, 12), matRod, 0, motorCy, motorCz + motorZLen/2 + 0.006, { rx: Math.PI/2 });
 
-const motorTop = plateTop + motorH;
-const elbowH = 0.014;
-const elbowCy = motorTop + elbowH / 2;
-addMesh(actuator, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, elbowCy, motorCz * 0.4, { castShadow: true });
+    const motorTop = plateTop + motorH;
+    const elbowH = 0.014;
+    const elbowCy = motorTop + elbowH / 2;
+    addMesh(act, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, elbowCy, motorCz * 0.4, { castShadow: true });
 
-const bodyBot = motorTop + elbowH;
-const bodyH = 0.13;
-const bodyCy = bodyBot + bodyH / 2;
-const bodyTop = bodyBot + bodyH;
-addMesh(actuator, new THREE.BoxGeometry(0.036, bodyH, 0.036), matActBody, 0, bodyCy, 0, { castShadow: true });
-addMesh(actuator, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyBot + 0.005, 0, { castShadow: true });
-addMesh(actuator, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyTop - 0.005, 0, { castShadow: true });
-addMesh(actuator, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyCy - 0.025, 0);
-addMesh(actuator, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyCy + 0.025, 0);
+    const bodyBot = motorTop + elbowH;
+    const bodyH = 0.13;
+    const bodyCy = bodyBot + bodyH / 2;
+    const bodyTop = bodyBot + bodyH;
+    addMesh(act, new THREE.BoxGeometry(0.036, bodyH, 0.036), matActBody, 0, bodyCy, 0, { castShadow: true });
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyBot + 0.005, 0, { castShadow: true });
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyTop - 0.005, 0, { castShadow: true });
+    addMesh(act, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyCy - 0.025, 0);
+    addMesh(act, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyCy + 0.025, 0);
 
-const rodBase = bodyTop;
-const rodTopLocal = (H + P + P/2) - P/2 - P;
-const rodLen = rodTopLocal - rodBase - 0.006;
-addMesh(actuator, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, rodBase + rodLen/2, 0, { castShadow: true });
-addMesh(actuator, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
-addMesh(actuator, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodTopLocal, 0, { rx: Math.PI/2 });
+    const rodBase = bodyTop;
+    const rodTopLocal = (H + P + P/2) - P/2 - P;
+    const rodLen = rodTopLocal - rodBase - 0.006;
+    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, rodBase + rodLen/2, 0, { castShadow: true });
+    addMesh(act, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
+    addMesh(act, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodTopLocal, 0, { rx: Math.PI/2 });
 
-addMesh(actuator, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, 0.026, motorCy, motorCz + motorZLen/2 + 0.004);
-addMesh(actuator, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 0.042, motorCy, motorCz + motorZLen/2 + 0.004, { rz: Math.PI/2 });
+    const cableSide = xPos < 0 ? -1 : 1;
+    addMesh(act, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, cableSide * 0.026, motorCy, motorCz + motorZLen/2 + 0.004);
+    addMesh(act, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, cableSide * 0.042, motorCy, motorCz + motorZLen/2 + 0.004, { rz: Math.PI/2 });
 
-actuator.position.set(0, P, 0);
-bracket.add(actuator);
+    act.position.set(xPos, P, 0);
+    bracket.add(act);
+    return act;
+}
+
+makeActuator(-actSpacing, '电动推杆(左)');
+makeActuator( actSpacing, '电动推杆(右)');
 
 /* ========== Top Beam (顶部横梁 500mm, 10mm厚, 6mm孔@20mm间距) ========== */
 const BL = 0.50;
@@ -552,7 +562,8 @@ function makeLabel(text, px, py, pz, color) {
     return sp;
 }
 
-bracket.add(makeLabel('电动推杆', 0.07, P + 0.12, 0.05, '#c0392b'));
+bracket.add(makeLabel('电动推杆(左)', -actSpacing - 0.07, P + 0.12, 0.05, '#c0392b'));
+bracket.add(makeLabel('电动推杆(右)',  actSpacing + 0.07, P + 0.12, 0.05, '#c0392b'));
 bracket.add(makeLabel('横梁 500mm', BL/2 + 0.04, beamY, 0, '#1e8449'));
 bracket.add(makeLabel('3030铝型材', L/2 + 0.05, P/2, -W/2, '#7d3c98'));
 
