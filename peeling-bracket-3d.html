@@ -9,45 +9,46 @@
         body { background: #ffffff; overflow: hidden; font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif; }
         canvas { display: block; }
 
-        #info-panel {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255,255,255,0.96);
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
-            padding: 20px 22px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-            max-width: 260px;
-            z-index: 10;
-            backdrop-filter: blur(8px);
+        #info-toggle {
+            position: absolute; top: 16px; left: 16px; z-index: 11;
+            width: 38px; height: 38px; border: 1px solid #ddd; border-radius: 10px;
+            background: rgba(255,255,255,0.94); color: #666; font-size: 18px;
+            font-family: inherit; cursor: pointer; display: flex; align-items: center;
+            justify-content: center; box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            backdrop-filter: blur(6px); transition: all 0.15s; line-height: 1;
         }
+        #info-toggle:hover { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+        #info-toggle.open { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+
+        #info-panel {
+            position: absolute; top: 16px; left: 62px;
+            background: rgba(255,255,255,0.96); border: 1px solid #e0e0e0;
+            border-radius: 12px; padding: 18px 20px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.07); max-width: 240px;
+            z-index: 10; backdrop-filter: blur(8px);
+            display: none;
+        }
+        #info-panel.show { display: block; }
         #info-panel h2 {
-            font-size: 15px; color: #222;
-            margin-bottom: 14px; padding-bottom: 10px;
+            font-size: 14px; color: #222;
+            margin-bottom: 12px; padding-bottom: 8px;
             border-bottom: 2px solid #4a90d9; letter-spacing: 1px;
         }
-        .info-row { display: flex; justify-content: space-between; margin: 5px 0; font-size: 12.5px; }
+        .info-row { display: flex; justify-content: space-between; margin: 4px 0; font-size: 12px; }
         .info-row .lbl { color: #888; }
         .info-row .val { color: #333; font-weight: 600; }
-        #legend-panel {
-            position: absolute; bottom: 50px; left: 20px;
-            background: rgba(255,255,255,0.94); border: 1px solid #e0e0e0;
-            border-radius: 10px; padding: 12px 16px;
-            box-shadow: 0 2px 14px rgba(0,0,0,0.06); z-index: 10;
-            backdrop-filter: blur(8px); max-width: 200px;
-        }
+        .legend-sep { margin-top: 10px; padding-top: 10px; border-top: 1px solid #eee; }
         .legend-title { font-size: 11px; color: #999; margin-bottom: 5px; }
         .legend-item { display: flex; align-items: center; margin: 3px 0; font-size: 10.5px; color: #555; }
         .legend-dot { width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; border: 1px solid rgba(0,0,0,0.1); }
 
         @media (max-width: 768px) {
-            #info-panel { max-width: 180px; padding: 12px 14px; top: 10px; left: 10px; }
-            #info-panel h2 { font-size: 13px; margin-bottom: 8px; padding-bottom: 6px; }
-            .info-row { font-size: 11px; margin: 3px 0; }
-            #legend-panel { bottom: 44px; left: 10px; padding: 8px 12px; }
-            .legend-item { font-size: 9.5px; margin: 2px 0; }
-            .legend-dot { width: 8px; height: 8px; margin-right: 5px; }
+            #info-toggle { top: 10px; left: 10px; width: 34px; height: 34px; font-size: 16px; }
+            #info-panel { top: 10px; left: 52px; max-width: 200px; padding: 14px 16px; }
+            #info-panel h2 { font-size: 12.5px; margin-bottom: 8px; }
+            .info-row { font-size: 10.5px; margin: 3px 0; }
+            .legend-item { font-size: 9.5px; }
+            .legend-dot { width: 8px; height: 8px; }
             #view-bar { bottom: 44px; right: 10px; }
             #view-bar button { width: 56px; padding: 6px 0; font-size: 10.5px; }
             #mode-bar button { padding: 6px 12px; font-size: 11px; }
@@ -108,6 +109,7 @@
 </head>
 <body>
 
+<button id="info-toggle" title="参数与图例">···</button>
 <div id="info-panel">
     <h2>管道防腐层胶带剥离支架</h2>
     <div class="info-row"><span class="lbl">框架材料</span><span class="val">3030铝型材</span></div>
@@ -118,16 +120,15 @@
     <div class="info-row"><span class="lbl">驱动方式</span><span class="val">电动推杆</span></div>
     <div class="info-row"><span class="lbl">力传感器</span><span class="val">椭圆形 ×2</span></div>
     <div class="info-row"><span class="lbl">夹具</span><span class="val">钳形 2cm ×2</span></div>
-</div>
-
-<div id="legend-panel">
-    <div class="legend-title">图例</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>3030铝型材</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#1a1a1a"></div>电动推杆</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#dcdce8"></div>力传感器（银白色椭圆）</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>剥离线（金属银）</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#b0b0b0"></div>钳形夹具（镀锌银）</div>
-    <div class="legend-item"><div class="legend-dot" style="background:#111"></div>黑色胶带 / 旋钮</div>
+    <div class="legend-sep">
+        <div class="legend-title">图例</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>3030铝型材</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#1a1a1a"></div>电动推杆</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#dcdce8"></div>力传感器（银白色椭圆）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>剥离线（金属银）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#b0b0b0"></div>钳形夹具（镀锌银）</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#111"></div>黑色胶带 / 旋钮</div>
+    </div>
 </div>
 
 <div id="sel-bar">
@@ -562,6 +563,14 @@ document.getElementById('btn-deselect').addEventListener('click', clearSelection
 addEventListener('keydown', e => {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedGroup) { e.preventDefault(); deleteSelected(); }
     if (e.key === 'Escape') clearSelection();
+});
+
+/* ========== Info Panel Toggle ========== */
+const infoToggle = document.getElementById('info-toggle');
+const infoPanel = document.getElementById('info-panel');
+infoToggle.addEventListener('click', () => {
+    const open = infoPanel.classList.toggle('show');
+    infoToggle.classList.toggle('open', open);
 });
 
 /* ========== Frame Toggle ========== */
