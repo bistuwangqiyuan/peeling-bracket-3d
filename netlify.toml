@@ -1,0 +1,7 @@
+# 静态站点：根目录直接发布 index.html
+[build]
+  publish = "."
+
+# 单页应用可在此加重定向；当前为纯静态 HTML，无需构建命令
+[build.environment]
+  NODE_VERSION = "20"

@@ -116,10 +116,11 @@
     <div class="info-row"><span class="lbl">底座长度</span><span class="val">600 mm</span></div>
     <div class="info-row"><span class="lbl">支架宽度</span><span class="val">120 mm</span></div>
     <div class="info-row"><span class="lbl">支架高度</span><span class="val">300 mm</span></div>
-    <div class="info-row"><span class="lbl">横梁</span><span class="val">500 × 30 × 30 mm</span></div>
+    <div class="info-row"><span class="lbl">横梁</span><span class="val">500 × 30 × 10 mm</span></div>
     <div class="info-row"><span class="lbl">驱动方式</span><span class="val">电动推杆</span></div>
     <div class="info-row"><span class="lbl">力传感器</span><span class="val">椭圆形 ×2</span></div>
     <div class="info-row"><span class="lbl">夹具</span><span class="val">钳形 2cm ×2</span></div>
+    <div class="info-row"><span class="lbl">支撑轮</span><span class="val">62mm 高 ×4</span></div>
     <div class="legend-sep">
         <div class="legend-title">图例</div>
         <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>3030铝型材</div>
@@ -128,6 +129,7 @@
         <div class="legend-item"><div class="legend-dot" style="background:#c0c0c0"></div>剥离线（金属银）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#b0b0b0"></div>钳形夹具（镀锌银）</div>
         <div class="legend-item"><div class="legend-dot" style="background:#111"></div>黑色胶带 / 旋钮</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#333"></div>支撑轮（橡胶）</div>
     </div>
 </div>
 
@@ -211,6 +213,7 @@ const matClamp    = new THREE.MeshStandardMaterial({ color: 0xb8b8b8, metalness:
 const matClampJaw = new THREE.MeshStandardMaterial({ color: 0xa8a8a8, metalness: 0.72, roughness: 0.28 });
 const matKnob     = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.30, roughness: 0.50 });
 const matTape     = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.05, roughness: 0.85 });
+const matWheelRubber = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.10, roughness: 0.85 });
 
 /* ========== Helpers ========== */
 function addMesh(parent, geo, mat, x, y, z, opts) {
@@ -350,15 +353,48 @@ addMesh(actuator, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 
 actuator.position.set(0, P, 0);
 bracket.add(actuator);
 
-/* ========== Top Beam (顶部横梁 500mm) ========== */
+/* ========== Top Beam (顶部横梁 500mm, 10mm厚, 6mm孔@20mm间距) ========== */
 const BL = 0.50;
-const beamY = H + P + P/2;
-placeProfile(BL, 'x', 0, beamY, 0, '顶部横梁 500mm');
+const beamThick = 0.010;
+const beamY = H + P + beamThick / 2;
+
+const beamShape = new THREE.Shape();
+beamShape.moveTo(-BL / 2, -P / 2);
+beamShape.lineTo(BL / 2, -P / 2);
+beamShape.lineTo(BL / 2, P / 2);
+beamShape.lineTo(-BL / 2, P / 2);
+beamShape.closePath();
+
+const holeR = 0.003;
+const holeSp = 0.020;
+for (let hx = 0; hx <= BL / 2 - 0.008; hx += holeSp) {
+    const h1 = new THREE.Path();
+    h1.absarc(hx, 0, holeR, 0, Math.PI * 2, false);
+    beamShape.holes.push(h1);
+    if (hx > 0) {
+        const h2 = new THREE.Path();
+        h2.absarc(-hx, 0, holeR, 0, Math.PI * 2, false);
+        beamShape.holes.push(h2);
+    }
+}
+
+const beamGeo = new THREE.ExtrudeGeometry(beamShape, {
+    depth: beamThick, bevelEnabled: false, curveSegments: 16
+});
+beamGeo.translate(0, 0, -beamThick / 2);
+
+const topBeam = new THREE.Mesh(beamGeo, matAluminum);
+topBeam.rotation.x = -Math.PI / 2;
+topBeam.position.set(0, beamY, 0);
+topBeam.castShadow = true;
+topBeam.receiveShadow = true;
+topBeam.userData.partName = '顶部横梁 500mm';
+bracket.add(topBeam);
 
 /* ========== Peeling Line Assemblies (each with sensor + clamp) ========== */
 const lineR = 0.0018;
 const peelSpacing = 0.12;
-const peelTopY = beamY - P/2;
+const peelTopY = beamY - beamThick / 2;
 
 function makeEllipsoidSensor(parent, cx, cy, cz) {
     const s = addMesh(parent, new THREE.SphereGeometry(0.015, 24, 16), matSensor, cx, cy, cz, { castShadow: true });
@@ -432,6 +468,62 @@ function makePeelLineAssembly(sign, label) {
 makePeelLineAssembly(-1, '剥离线(左)+传感器+夹具');
 makePeelLineAssembly( 1, '剥离线(右)+传感器+夹具');
 
+/* ========== Support Wheels (支撑轮 62mm, 前后方向) ========== */
+const WH = 0.062;
+
+function makeSupportWheel(px, pz) {
+    const g = new THREE.Group();
+    g.userData.partName = '支撑轮';
+    const wheelR = 0.018;
+    const wheelW = 0.014;
+    const axleR = 0.003;
+    const plateH = 0.005;
+    const plateSize = 0.032;
+    const wheelCY = -(WH - wheelR);
+
+    addMesh(g, new THREE.BoxGeometry(plateSize, plateH, plateSize), matPlate,
+            0, -plateH / 2, 0, { castShadow: true });
+
+    const forkTop = -plateH;
+    const forkSplitY = wheelCY + wheelR + 0.004;
+    const bodyH = forkTop - forkSplitY;
+    addMesh(g, new THREE.BoxGeometry(0.022, bodyH, 0.010), matClamp,
+            0, forkSplitY + bodyH / 2, 0, { castShadow: true });
+
+    const armBot = wheelCY - wheelR * 0.5;
+    const armH = forkSplitY - armBot;
+    const armX = wheelW / 2 + 0.004;
+    addMesh(g, new THREE.BoxGeometry(0.004, armH, 0.010), matClamp,
+            -armX, armBot + armH / 2, 0, { castShadow: true });
+    addMesh(g, new THREE.BoxGeometry(0.004, armH, 0.010), matClamp,
+             armX, armBot + armH / 2, 0, { castShadow: true });
+
+    addMesh(g, new THREE.CylinderGeometry(wheelR, wheelR, wheelW, 32), matWheelRubber,
+            0, wheelCY, 0, { rz: Math.PI / 2, castShadow: true });
+
+    addMesh(g, new THREE.TorusGeometry(wheelR - 0.001, 0.0015, 8, 32), matKnob,
+            0, wheelCY, 0, { ry: Math.PI / 2 });
+
+    addMesh(g, new THREE.CylinderGeometry(wheelR * 0.4, wheelR * 0.4, wheelW + 0.002, 16), matRod,
+            0, wheelCY, 0, { rz: Math.PI / 2 });
+
+    addMesh(g, new THREE.CylinderGeometry(axleR, axleR, wheelW + 0.014, 12), matRod,
+            0, wheelCY, 0, { rz: Math.PI / 2 });
+
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => {
+        addMesh(g, new THREE.CylinderGeometry(0.002, 0.002, plateH + 0.002, 8), matBolt,
+                sx * 0.010, -plateH / 2, sz * 0.010);
+    });
+
+    g.position.set(px, 0, pz);
+    bracket.add(g);
+    return g;
+}
+
+[[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(([sx, sz]) => {
+    makeSupportWheel(sx * (L / 2 - P / 2), sz * (W / 2 - P / 2));
+});
+
 scene.add(bracket);
 
 /* ========== Labels ========== */
@@ -475,6 +567,8 @@ bracket.add(makeLabel('钳形夹具', peelSpacing + 0.06, cLabelY, 0.03, '#d3540
 bracket.add(makeLabel('黑色胶带', -peelSpacing - 0.06, peelTopY - 0.35, 0.03, '#333'));
 bracket.add(makeLabel('黑色胶带', peelSpacing + 0.06, peelTopY - 0.35, 0.03, '#333'));
 
+bracket.add(makeLabel('支撑轮 ×4', L/2 + 0.06, -WH/2, -W/2, '#555'));
+
 /* ========== Dimension Lines ========== */
 function makeDimLine(ax, ay, az, bx, by, bz, label, ox, oy, oz) {
     const g = new THREE.Group();
@@ -495,16 +589,17 @@ function makeDimLine(ax, ay, az, bx, by, bz, label, ox, oy, oz) {
 bracket.add(makeDimLine(-L/2, 0, -W/2-0.01, L/2, 0, -W/2-0.01, '600mm', 0, 0, -0.03));
 bracket.add(makeDimLine(L/2+0.01, P/2, -W/2, L/2+0.01, H+P/2, -W/2, '300mm', 0.03, 0, 0));
 bracket.add(makeDimLine(-L/2, 0, -W/2-0.01, -L/2, 0, W/2+0.01, '120mm', -0.03, 0, 0));
+bracket.add(makeDimLine(L/2+0.01, -WH, -W/2, L/2+0.01, 0, -W/2, '62mm', 0.03, 0, 0));
 
 /* ========== Ground & Grid ========== */
 const ground = new THREE.Mesh(
     new THREE.PlaneGeometry(4, 4),
     new THREE.MeshStandardMaterial({ color: 0xfafafa, roughness: 0.95, metalness: 0 })
 );
-ground.rotation.x = -Math.PI/2; ground.position.y = -0.002; ground.receiveShadow = true;
+ground.rotation.x = -Math.PI/2; ground.position.y = -0.064; ground.receiveShadow = true;
 scene.add(ground);
 const grid = new THREE.GridHelper(3, 60, 0xe5e5e5, 0xf0f0f0);
-grid.position.y = -0.001;
+grid.position.y = -0.063;
 scene.add(grid);
 
 /* ========== Environment ========== */
