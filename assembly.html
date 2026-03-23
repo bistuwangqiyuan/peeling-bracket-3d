@@ -233,9 +233,10 @@ trackPositions.forEach(zPos => {
 });
 rootGroup.add(trackGroup);
 
-/* ========== 3. Crawler Car (~300x300mm, at top of pipe, bracket on side) ========== */
+/* ========== 3. Crawler Car (~300x300mm, circumferential travel) ========== */
 const carR = pipeR + trackH;
 const carCenterY = carR;
+const wheelR = 0.022, wheelW2 = 0.030;
 
 const carBodyW = 0.30, carBodyH = 0.10, carBodyD = 0.30;
 addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
@@ -248,9 +249,20 @@ addMesh(carGroup, new THREE.BoxGeometry(carBodyW + 0.02, 0.005, carBodyD + 0.02)
 
 trackPositions.forEach(tz => {
     [-1, 1].forEach(sx => {
-        addMesh(carGroup, new THREE.CylinderGeometry(0.020, 0.020, 0.035, 16),
-            matCarPlate, sx * (carBodyW/2 + 0.010), carCenterY - 0.005, tz,
-            { rz: Math.PI/2, castShadow: true });
+        addMesh(carGroup, new THREE.CylinderGeometry(wheelR, wheelR, wheelW2, 24),
+            matCarPlate, sx * 0.08, carCenterY - wheelR * 0.3, tz,
+            { rx: Math.PI/2, castShadow: true });
+        addMesh(carGroup, new THREE.CylinderGeometry(wheelR * 0.35, wheelR * 0.35, wheelW2 + 0.006, 12),
+            matBolt, sx * 0.08, carCenterY - wheelR * 0.3, tz,
+            { rx: Math.PI/2 });
+        addMesh(carGroup, new THREE.CylinderGeometry(0.003, 0.003, wheelW2 + 0.020, 8),
+            matRod, sx * 0.08, carCenterY - wheelR * 0.3, tz,
+            { rx: Math.PI/2 });
+
+        addMesh(carGroup, new THREE.BoxGeometry(0.010, 0.03, 0.008), matCarBody,
+            sx * 0.08, carCenterY - 0.005, tz - (wheelW2/2 + 0.006));
+        addMesh(carGroup, new THREE.BoxGeometry(0.010, 0.03, 0.008), matCarBody,
+            sx * 0.08, carCenterY - 0.005, tz + (wheelW2/2 + 0.006));
     });
 });
 
