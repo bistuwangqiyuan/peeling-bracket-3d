@@ -405,8 +405,7 @@ function makeSupportWheel(px, pz) {
     makeSupportWheel(sx*(L/2-P/2), sz*(W/2-P/2));
 });
 
-bracketGroup.rotation.y = -Math.PI / 2;
-bracketGroup.position.set(sidePlateX + sidePlateT/2 + W/2, sidePlateY, 0);
+bracketGroup.position.set(sidePlateX + sidePlateT/2 + L/2, sidePlateY - H/2, 0);
 
 rootGroup.add(bracketGroup);
 scene.add(rootGroup);
@@ -433,7 +432,7 @@ function makeLabel(text, px, py, pz, color) {
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道 ×2', pipeR + 0.15, 0.3, 0.25, '#7f8c8d'));
 rootGroup.add(makeLabel('轨道爬车', -0.20, carTopY + 0.06, 0, '#c0392b'));
-rootGroup.add(makeLabel('剥离支架', sidePlateX + W/2 + 0.10, sidePlateY + H/2 + 0.05, 0, '#2980b9'));
+rootGroup.add(makeLabel('剥离支架', sidePlateX + L/2 + 0.08, sidePlateY + 0.06, 0, '#2980b9'));
 rootGroup.add(makeLabel('侧面安装板', sidePlateX + 0.06, sidePlateY, 0.20, '#8e44ad'));
 
 /* ========== Ground ========== */
