@@ -150,68 +150,64 @@ const P=30, L=600, W=120, H=300, BL=500, BT=10, WH=62;
 /* ==================== 图1: 立体结构示意图 ==================== */
 function drawIsometric(svg){
   titleBlock(svg,1,'立体结构示意图','1∶5');
-  const g=el(svg,'g',{transform:'translate(105,145)'});
+  const g=el(svg,'g',{transform:'translate(108,140)'});
   const s=1/5;
   const cos30=0.866,sin30=0.5;
   function iso(x,y,z){return[(x-z)*cos30*s, (-y+(x+z)*sin30)*s];}
-  function isoLine(g2,x1,y1,z1,x2,y2,z2,dash){
+  function iL(g2,x1,y1,z1,x2,y2,z2,dash){
     const[a,b]=iso(x1,y1,z1),[c,d]=iso(x2,y2,z2);
     line(g2,a,b,c,d,dash);
   }
-  function isoRect3D(g2,x,y,z,w,h,d,visF,visL,visT){
-    const corners=[
-      [x,y,z],[x+w,y,z],[x+w,y,z+d],[x,y,z+d],
-      [x,y+h,z],[x+w,y+h,z],[x+w,y+h,z+d],[x,y+h,z+d]
-    ];
-    if(visF){isoLine(g2,...corners[0],0,...corners[1],0);isoLine(g2,...corners[4],0,...corners[5],0);
-      isoLine(g2,...corners[0],0,...corners[4],0);isoLine(g2,...corners[1],0,...corners[5],0);}
-    if(visL!==false){isoLine(g2,...corners[1],0,...corners[2],0);isoLine(g2,...corners[5],0,...corners[6],0);
-      isoLine(g2,...corners[2],0,...corners[6],0);}
-    if(visT!==false){isoLine(g2,...corners[4],0,...corners[5],0);isoLine(g2,...corners[5],0,...corners[6],0);
-      isoLine(g2,...corners[4],0,...corners[7],0);isoLine(g2,...corners[7],0,...corners[6],0);}
+  function isoBox(g2,x,y,z,w,h,d){
+    iL(g2,x,y,z,x+w,y,z);iL(g2,x,y,z,x,y+h,z);iL(g2,x+w,y,z,x+w,y+h,z);
+    iL(g2,x,y+h,z,x+w,y+h,z);
+    iL(g2,x+w,y,z,x+w,y,z+d);iL(g2,x+w,y+h,z,x+w,y+h,z+d);
+    iL(g2,x+w,y,z+d,x+w,y+h,z+d);
+    iL(g2,x,y+h,z,x,y+h,z+d);iL(g2,x+w,y+h,z,x+w,y+h,z+d);
+    iL(g2,x,y+h,z+d,x+w,y+h,z+d);
+    iL(g2,x,y+h,z,x,y+h,z+d);
   }
   const bx=-L/2,bz=-W/2;
-  isoRect3D(g,bx,0,bz,L,P,P,true,true,true);
-  isoRect3D(g,bx,0,bz+W-P,L,P,P,true,true,true);
-  isoRect3D(g,bx,0,bz+P,P,P,W-2*P,true,true,true);
-  isoRect3D(g,bx+L-P,0,bz+P,P,P,W-2*P,true,true,true);
+  isoBox(g,bx,0,bz,L,P,P);
+  isoBox(g,bx,0,bz+W-P,L,P,P);
+  isoBox(g,bx,0,bz+P,P,P,W-2*P);
+  isoBox(g,bx+L-P,0,bz+P,P,P,W-2*P);
   const vH=H-P;
   [[bx,bz],[bx+L-P,bz],[bx,bz+W-P],[bx+L-P,bz+W-P]].forEach(([vx,vz])=>{
-    isoRect3D(g,vx,P,vz,P,vH,P,true,true,true);
+    isoBox(g,vx,P,vz,P,vH,P);
   });
   const tY=H;
-  isoRect3D(g,bx,tY,bz,L,P,P,true,true,true);
-  isoRect3D(g,bx,tY,bz+W-P,L,P,P,true,true,true);
-  isoRect3D(g,bx,tY,bz+P,P,P,W-2*P,true,true,true);
-  isoRect3D(g,bx+L-P,tY,bz+P,P,P,W-2*P,true,true,true);
-  const bmY=H+P,bmX=-BL/2,bmZ=-P/2;
-  isoRect3D(g,bmX,bmY,bmZ,BL,BT,P,true,true,true);
+  isoBox(g,bx,tY,bz,L,P,P);
+  isoBox(g,bx,tY,bz+W-P,L,P,P);
+  isoBox(g,bx,tY,bz+P,P,P,W-2*P);
+  isoBox(g,bx+L-P,tY,bz+P,P,P,W-2*P);
+  const bmY=H+P;
+  isoBox(g,-BL/2,bmY,-P/2,BL,BT,P);
   for(let hx=0;hx<=BL/2-8;hx+=20){
     [hx,-hx].forEach(dx=>{
       if(dx===0&&hx!==0)return;
-      const[cx2,cy2]=iso(dx,bmY+BT,0);
-      circle(g,cx2,cy2,0.9*s,{lw:'0.2'});
+      const[hcx,hcy]=iso(dx,bmY+BT,0);
+      circle(g,hcx,hcy,0.9*s,{lw:'0.15'});
     });
   }
-  const actW=36,actD=36,actH2=130,actBase=P+7+14;
-  isoRect3D(g,-actW/2,actBase,-actD/2,actW,actH2,actD,true,true,true);
+  const actW2=36,actD2=36,actH2=130,actBase=P+7+14;
+  isoBox(g,-actW2/2,actBase,-actD2/2,actW2,actH2,actD2);
   const rodBot=actBase+actH2,rodTop=H+P;
-  isoLine(g,-3,rodBot,0,-3,rodTop,0);isoLine(g,3,rodBot,0,3,rodTop,0);
-  const mW=48,mH2=32,mZL=67;
-  isoRect3D(g,-mW/2,P+7,-mZL/2+35,mW,mH2,mZL,true,true,true);
+  iL(g,-3,rodBot,0,-3,rodTop,0);iL(g,3,rodBot,0,3,rodTop,0);
+  isoBox(g,-24,P+7,-67/2+35,48,32,67);
   const peelY=bmY;
   [[-120,0],[120,0]].forEach(([plx,plz])=>{
     const[sx2,sy2]=iso(plx,peelY,plz);
-    const[ex2,ey2]=iso(plx,peelY-240,plz);
-    line(g,sx2,sy2,ex2,ey2);
-    const[sensX,sensY]=iso(plx,peelY-218,plz);
-    ellipse(g,sensX,sensY,2.2*s,1.2*s);
-    const[clX,clY]=iso(plx,peelY-240,plz);
-    const cW2=3*s;
-    rect(g,clX-cW2,clY-1*s,cW2*2,5*s);
-    const[tpX,tpY]=iso(plx,peelY-258,plz);
-    const[tbX,tbY]=iso(plx,peelY-408,plz);
-    line(g,tpX,tpY,tbX,tbY);
+    const[ey2x,ey2y]=iso(plx,peelY-240,plz);
+    line(g,sx2,sy2,ey2x,ey2y);
+    const[snx,sny]=iso(plx,peelY-218,plz);
+    ellipse(g,snx,sny,2.2*s,1.2*s);
+    const[clx2,cly2]=iso(plx,peelY-240,plz);
+    const cw2=3*s;
+    rect(g,clx2-cw2,cly2-1*s,cw2*2,5*s);
+    const[tpx,tpy]=iso(plx,peelY-258,plz);
+    const[tbx,tby]=iso(plx,peelY-350,plz);
+    line(g,tpx,tpy,tbx,tby);
   });
   const wheelR=18;
   [[-L/2+P/2,-W/2+P/2],[L/2-P/2,-W/2+P/2],[-L/2+P/2,W/2-P/2],[L/2-P/2,W/2-P/2]].forEach(([wx,wz])=>{
@@ -221,17 +217,15 @@ function drawIsometric(svg){
     const[ftx,fty]=iso(wx,0,wz);
     line(g,ftx,fty,wcx2,wcy2+wheelR*s*0.5);
   });
-  const co=g;
-  const off=70;
-  callout(co,1,...iso(-L/2-20,P/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,P/2,0));
-  callout(co,8,...iso(-L/2-20,H/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,H/2,-W/2));
-  callout(co,9,...iso(-L/2-20,H+P/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,H+P/2,0));
-  callout(co,11,...iso(BL/2+20,bmY+BT/2,0).map((v,i)=>i===0?v+5:v),...iso(BL/2,bmY+BT/2,0));
-  callout(co,13,...iso(50,actBase+actH2/2,50).map((v,i)=>i===0?v+5:v),...iso(actW/2,actBase+actH2/2,0));
-  callout(co,20,...iso(-120-50,peelY-218,0).map((v,i)=>i===0?v-5:v),...iso(-120,peelY-218,0));
-  callout(co,25,...iso(120+50,peelY-240,0).map((v,i)=>i===0?v+5:v),...iso(120,peelY-240,0));
-  callout(co,29,...iso(L/2+20,-WH+wheelR,-W/2+P/2).map((v,i)=>i===0?v+5:v),...iso(L/2-P/2,-WH+wheelR,-W/2+P/2));
-  callout(co,28,...iso(-120-50,peelY-350,0).map((v,i)=>i===0?v-5:v),...iso(-120,peelY-350,0));
+  callout(g,1,...iso(-L/2-25,P/2,0).map((v,i)=>i===0?v-6:v),...iso(-L/2,P/2,-W/2));
+  callout(g,8,...iso(-L/2-25,H/2,0).map((v,i)=>i===0?v-6:v),...iso(-L/2+P/2,H/2,-W/2));
+  callout(g,9,...iso(-L/2-25,H+P/2,0).map((v,i)=>i===0?v-6:v),...iso(-L/2,H+P/2,-W/2));
+  callout(g,11,...iso(BL/2+25,bmY+BT/2,0).map((v,i)=>i===0?v+6:v),...iso(BL/2,bmY+BT/2,0));
+  callout(g,13,...iso(55,actBase+actH2/2,55).map((v,i)=>i===0?v+6:v),...iso(actW2/2,actBase+actH2/2,actD2/2));
+  callout(g,20,...iso(-120-55,peelY-218,0).map((v,i)=>i===0?v-6:v),...iso(-120,peelY-218,0));
+  callout(g,25,...iso(120+55,peelY-240,0).map((v,i)=>i===0?v+6:v),...iso(120,peelY-240,0));
+  callout(g,29,...iso(L/2+25,-WH+wheelR,-W/2+P/2).map((v,i)=>i===0?v+6:v),...iso(L/2-P/2,-WH+wheelR,-W/2+P/2));
+  callout(g,28,...iso(-120-55,peelY-310,0).map((v,i)=>i===0?v-6:v),...iso(-120,peelY-310,0));
 }
 
 /* ==================== 图2: 主视图 (前视图) ==================== */
