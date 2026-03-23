@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>专利附图 — 管道防腐层胶带剥离支架</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#e8e8e8;font-family:'SimSun','宋体',serif;color:#000}
+#toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:#fff;border-bottom:1px solid #ccc;
+  display:flex;align-items:center;gap:4px;padding:6px 12px;flex-wrap:wrap}
+#toolbar button{padding:5px 12px;border:1px solid #999;border-radius:4px;background:#fff;cursor:pointer;
+  font-size:13px;font-family:inherit;transition:all .15s}
+#toolbar button:hover,#toolbar button.active{background:#333;color:#fff;border-color:#333}
+#toolbar .sep{width:1px;height:24px;background:#ccc;margin:0 4px}
+#toolbar .title{font-weight:bold;font-size:14px;margin-right:8px}
+.pages{padding:50px 0 20px;display:flex;flex-direction:column;align-items:center;gap:20px}
+.page{background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.15);width:210mm;height:297mm;position:relative;overflow:hidden}
+.page svg{width:100%;height:100%;display:block}
+@media print{
+  body{background:#fff}
+  #toolbar{display:none!important}
+  .pages{padding:0;gap:0}
+  .page{box-shadow:none;page-break-after:always;margin:0}
+}
+</style>
+</head>
+<body>
+<div id="toolbar">
+  <span class="title">专利附图</span>
+  <button onclick="scrollToFig(1)" id="b1">图1 立体图</button>
+  <button onclick="scrollToFig(2)" id="b2">图2 主视图</button>
+  <button onclick="scrollToFig(3)" id="b3">图3 左视图</button>
+  <button onclick="scrollToFig(4)" id="b4">图4 俯视图</button>
+  <button onclick="scrollToFig(5)" id="b5">图5 推杆详图</button>
+  <button onclick="scrollToFig(6)" id="b6">图6 夹具详图</button>
+  <button onclick="scrollToFig(7)" id="b7">图7 轮组详图</button>
+  <div class="sep"></div>
+  <button onclick="window.print()">🖨 打印全部</button>
+</div>
+<div class="pages" id="pages"></div>
+
+<script>
+const NS='http://www.w3.org/2000/svg';
+const pages=document.getElementById('pages');
+
+function scrollToFig(n){
+  document.getElementById('fig'+n).scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function el(parent,tag,attrs){
+  const e=document.createElementNS(NS,tag);
+  for(const[k,v]of Object.entries(attrs||{})) e.setAttribute(k,v);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+
+function makePage(figNum){
+  const div=document.createElement('div');
+  div.className='page';div.id='fig'+figNum;
+  pages.appendChild(div);
+  const svg=el(null,'svg',{viewBox:'0 0 210 297',xmlns:NS});
+  div.appendChild(svg);
+  return svg;
+}
+
+function line(g,x1,y1,x2,y2,dash){
+  el(g,'line',{x1,y1,x2,y2,stroke:'#000','stroke-width':dash?'0.25':'0.4',
+    'stroke-dasharray':dash?'1.5,1':'none',fill:'none'});
+}
+
+function rect(g,x,y,w,h,opts){
+  const a={x,y,width:w,height:h,stroke:'#000','stroke-width':opts?.lw||'0.4',fill:opts?.fill||'none'};
+  if(opts?.dash) a['stroke-dasharray']='1.5,1';
+  el(g,'rect',a);
+}
+
+function circle(g,cx,cy,r,opts){
+  el(g,'circle',{cx,cy,r,stroke:'#000','stroke-width':opts?.lw||'0.3',fill:opts?.fill||'none'});
+}
+
+function ellipse(g,cx,cy,rx,ry){
+  el(g,'ellipse',{cx,cy,rx,ry,stroke:'#000','stroke-width':'0.3',fill:'none'});
+}
+
+function text(g,x,y,str,size,anchor,opts){
+  const t=el(g,'text',{x,y,'font-size':size||3,'text-anchor':anchor||'middle',
+    'dominant-baseline':'central','font-family':"'SimSun','宋体',serif",fill:'#000',...(opts||{})});
+  t.textContent=str;
+}
+
+function titleBlock(svg,figNum,title,scale){
+  const g=el(svg,'g');
+  const bx=25,by=275,bw=170,bh=14;
+  rect(g,bx,by,bw,bh,{lw:'0.5'});
+  line(g,bx+bw*0.5,by,bx+bw*0.5,by+bh);
+  line(g,bx+bw*0.75,by,bx+bw*0.75,by+bh);
+  line(g,bx,by+bh/2,bx+bw,by+bh/2);
+  text(g,bx+bw*0.25,by+bh*0.25,'图'+figNum,4);
+  text(g,bx+bw*0.25,by+bh*0.75,title,3.5);
+  text(g,bx+bw*0.625,by+bh*0.25,'管道防腐层胶带剥离支架',3.5);
+  text(g,bx+bw*0.625,by+bh*0.75,'实用新型专利附图',3);
+  text(g,bx+bw*0.875,by+bh*0.25,'比例',3);
+  text(g,bx+bw*0.875,by+bh*0.75,scale,3.5);
+}
+
+function dimLine(g,x1,y1,x2,y2,label,offset,dir){
+  const d=dir||'h';
+  const o=offset||8;
+  const dg=el(g,'g');
+  if(d==='h'){
+    const oy=y1<y2?Math.min(y1,y2)-o:Math.max(y1,y2)+o;
+    line(dg,x1,y1,x1,oy-1);line(dg,x2,y2,x2,oy-1);
+    line(dg,x1,oy,x2,oy);
+    arrowH(dg,x1,oy,1);arrowH(dg,x2,oy,-1);
+    text(dg,(x1+x2)/2,oy-1.5,label,2.8);
+  } else {
+    const ox=x1<x2?Math.min(x1,x2)-o:Math.max(x1,x2)+o;
+    line(dg,x1,y1,ox-1,y1);line(dg,x2,y2,ox-1,y2);
+    line(dg,ox,y1,ox,y2);
+    arrowV(dg,ox,y1,1);arrowV(dg,ox,y2,-1);
+    text(dg,ox-2,(y1+y2)/2,label,2.8,null,{transform:`rotate(-90,${ox-2},${(y1+y2)/2})`});
+  }
+}
+
+function arrowH(g,x,y,dir){
+  const d=dir*1.2;
+  el(g,'path',{d:`M${x},${y}L${x+d},${y-0.5}L${x+d},${y+0.5}Z`,fill:'#000',stroke:'none'});
+}
+function arrowV(g,x,y,dir){
+  const d=dir*1.2;
+  el(g,'path',{d:`M${x},${y}L${x-0.5},${y+d}L${x+0.5},${y+d}Z`,fill:'#000',stroke:'none'});
+}
+
+function callout(g,num,cx,cy,tx,ty){
+  const r=3;
+  circle(g,cx,cy,r,{lw:'0.3'});
+  text(g,cx,cy,String(num),2.8);
+  const ang=Math.atan2(ty-cy,tx-cx);
+  const sx=cx+r*Math.cos(ang),sy=cy+r*Math.sin(ang);
+  line(g,sx,sy,tx,ty);
+  const al=1;
+  el(g,'path',{d:`M${tx},${ty}L${tx-al*Math.cos(ang-0.3)},${ty-al*Math.sin(ang-0.3)}M${tx},${ty}L${tx-al*Math.cos(ang+0.3)},${ty-al*Math.sin(ang+0.3)}`,
+    stroke:'#000','stroke-width':'0.25',fill:'none'});
+}
+
+/* ==================== 设备参数 (mm) ==================== */
+const P=30, L=600, W=120, H=300, BL=500, BT=10, WH=62;
+
+/* ==================== 图1: 立体结构示意图 ==================== */
+function drawIsometric(svg){
+  titleBlock(svg,1,'立体结构示意图','1∶5');
+  const g=el(svg,'g',{transform:'translate(105,145)'});
+  const s=1/5;
+  const cos30=0.866,sin30=0.5;
+  function iso(x,y,z){return[(x-z)*cos30*s, (-y+(x+z)*sin30)*s];}
+  function isoLine(g2,x1,y1,z1,x2,y2,z2,dash){
+    const[a,b]=iso(x1,y1,z1),[c,d]=iso(x2,y2,z2);
+    line(g2,a,b,c,d,dash);
+  }
+  function isoRect3D(g2,x,y,z,w,h,d,visF,visL,visT){
+    const corners=[
+      [x,y,z],[x+w,y,z],[x+w,y,z+d],[x,y,z+d],
+      [x,y+h,z],[x+w,y+h,z],[x+w,y+h,z+d],[x,y+h,z+d]
+    ];
+    if(visF){isoLine(g2,...corners[0],0,...corners[1],0);isoLine(g2,...corners[4],0,...corners[5],0);
+      isoLine(g2,...corners[0],0,...corners[4],0);isoLine(g2,...corners[1],0,...corners[5],0);}
+    if(visL!==false){isoLine(g2,...corners[1],0,...corners[2],0);isoLine(g2,...corners[5],0,...corners[6],0);
+      isoLine(g2,...corners[2],0,...corners[6],0);}
+    if(visT!==false){isoLine(g2,...corners[4],0,...corners[5],0);isoLine(g2,...corners[5],0,...corners[6],0);
+      isoLine(g2,...corners[4],0,...corners[7],0);isoLine(g2,...corners[7],0,...corners[6],0);}
+  }
+  const bx=-L/2,bz=-W/2;
+  isoRect3D(g,bx,0,bz,L,P,P,true,true,true);
+  isoRect3D(g,bx,0,bz+W-P,L,P,P,true,true,true);
+  isoRect3D(g,bx,0,bz+P,P,P,W-2*P,true,true,true);
+  isoRect3D(g,bx+L-P,0,bz+P,P,P,W-2*P,true,true,true);
+  const vH=H-P;
+  [[bx,bz],[bx+L-P,bz],[bx,bz+W-P],[bx+L-P,bz+W-P]].forEach(([vx,vz])=>{
+    isoRect3D(g,vx,P,vz,P,vH,P,true,true,true);
+  });
+  const tY=H;
+  isoRect3D(g,bx,tY,bz,L,P,P,true,true,true);
+  isoRect3D(g,bx,tY,bz+W-P,L,P,P,true,true,true);
+  isoRect3D(g,bx,tY,bz+P,P,P,W-2*P,true,true,true);
+  isoRect3D(g,bx+L-P,tY,bz+P,P,P,W-2*P,true,true,true);
+  const bmY=H+P,bmX=-BL/2,bmZ=-P/2;
+  isoRect3D(g,bmX,bmY,bmZ,BL,BT,P,true,true,true);
+  for(let hx=0;hx<=BL/2-8;hx+=20){
+    [hx,-hx].forEach(dx=>{
+      if(dx===0&&hx!==0)return;
+      const[cx2,cy2]=iso(dx,bmY+BT,0);
+      circle(g,cx2,cy2,0.9*s,{lw:'0.2'});
+    });
+  }
+  const actW=36,actD=36,actH2=130,actBase=P+7+14;
+  isoRect3D(g,-actW/2,actBase,-actD/2,actW,actH2,actD,true,true,true);
+  const rodBot=actBase+actH2,rodTop=H+P;
+  isoLine(g,-3,rodBot,0,-3,rodTop,0);isoLine(g,3,rodBot,0,3,rodTop,0);
+  const mW=48,mH2=32,mZL=67;
+  isoRect3D(g,-mW/2,P+7,-mZL/2+35,mW,mH2,mZL,true,true,true);
+  const peelY=bmY;
+  [[-120,0],[120,0]].forEach(([plx,plz])=>{
+    const[sx2,sy2]=iso(plx,peelY,plz);
+    const[ex2,ey2]=iso(plx,peelY-240,plz);
+    line(g,sx2,sy2,ex2,ey2);
+    const[sensX,sensY]=iso(plx,peelY-218,plz);
+    ellipse(g,sensX,sensY,2.2*s,1.2*s);
+    const[clX,clY]=iso(plx,peelY-240,plz);
+    const cW2=3*s;
+    rect(g,clX-cW2,clY-1*s,cW2*2,5*s);
+    const[tpX,tpY]=iso(plx,peelY-258,plz);
+    const[tbX,tbY]=iso(plx,peelY-408,plz);
+    line(g,tpX,tpY,tbX,tbY);
+  });
+  const wheelR=18;
+  [[-L/2+P/2,-W/2+P/2],[L/2-P/2,-W/2+P/2],[-L/2+P/2,W/2-P/2],[L/2-P/2,W/2-P/2]].forEach(([wx,wz])=>{
+    const wcy=-WH+wheelR;
+    const[wcx2,wcy2]=iso(wx,wcy,wz);
+    ellipse(g,wcx2,wcy2,wheelR*s*0.8,wheelR*s*0.5);
+    const[ftx,fty]=iso(wx,0,wz);
+    line(g,ftx,fty,wcx2,wcy2+wheelR*s*0.5);
+  });
+  const co=g;
+  const off=70;
+  callout(co,1,...iso(-L/2-20,P/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,P/2,0));
+  callout(co,8,...iso(-L/2-20,H/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,H/2,-W/2));
+  callout(co,9,...iso(-L/2-20,H+P/2,0).map((v,i)=>i===0?v-5:v),...iso(-L/2,H+P/2,0));
+  callout(co,11,...iso(BL/2+20,bmY+BT/2,0).map((v,i)=>i===0?v+5:v),...iso(BL/2,bmY+BT/2,0));
+  callout(co,13,...iso(50,actBase+actH2/2,50).map((v,i)=>i===0?v+5:v),...iso(actW/2,actBase+actH2/2,0));
+  callout(co,20,...iso(-120-50,peelY-218,0).map((v,i)=>i===0?v-5:v),...iso(-120,peelY-218,0));
+  callout(co,25,...iso(120+50,peelY-240,0).map((v,i)=>i===0?v+5:v),...iso(120,peelY-240,0));
+  callout(co,29,...iso(L/2+20,-WH+wheelR,-W/2+P/2).map((v,i)=>i===0?v+5:v),...iso(L/2-P/2,-WH+wheelR,-W/2+P/2));
+  callout(co,28,...iso(-120-50,peelY-350,0).map((v,i)=>i===0?v-5:v),...iso(-120,peelY-350,0));
+}
+
+/* ==================== 图2: 主视图 (前视图) ==================== */
+function drawFrontView(svg){
+  titleBlock(svg,2,'主视图（前视图）','1∶4');
+  const s=1/4;
+  const cx=110,cy=160;
+  function px(x){return cx+x*s;}
+  function py(y){return cy-y*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  rect(g,px(-L/2),py(P),ps(L),ps(P));
+  rect(g,px(-L/2),py(P),ps(P),ps(P),{dash:true});
+  rect(g,px(L/2-P),py(P),ps(P),ps(P),{dash:true});
+  rect(g,px(-25-P/2),py(P),ps(P),ps(P),{dash:true});
+  rect(g,px(25-P/2),py(P),ps(P),ps(P),{dash:true});
+  [[- L/2,-W/2+P/2],[L/2-P,-W/2+P/2]].forEach(([xx])=>{
+    rect(g,px(xx),py(H),ps(P),ps(H-P));
+  });
+  [[-L/2,W/2-P/2],[L/2-P,W/2-P/2]].forEach(([xx])=>{
+    rect(g,px(xx),py(H),ps(P),ps(H-P),{dash:true});
+  });
+  rect(g,px(-L/2),py(H+P),ps(L),ps(P));
+  rect(g,px(-BL/2),py(H+P+BT),ps(BL),ps(BT));
+  for(let hx=0;hx<=BL/2-8;hx+=20){
+    circle(g,px(hx),py(H+P+BT/2),3*s/2,{lw:'0.2'});
+    if(hx>0) circle(g,px(-hx),py(H+P+BT/2),3*s/2,{lw:'0.2'});
+  }
+  const actBotY=P+7, actBodyW=36, actBodyH=130;
+  rect(g,px(-60/2),py(P+7),ps(60),ps(7));
+  rect(g,px(-48/2),py(P+7+32),ps(48),ps(32));
+  rect(g,px(-42/2),py(P+7+32+14),ps(42),ps(14));
+  rect(g,px(-actBodyW/2),py(actBotY+46+actBodyH),ps(actBodyW),ps(actBodyH));
+  line(g,px(-6),py(actBotY+46+actBodyH),px(-6),py(H+P));
+  line(g,px(6),py(actBotY+46+actBodyH),px(6),py(H+P));
+  circle(g,px(0),py(H+P-3),ps(10),{lw:'0.2'});
+  const peelY_top=H+P;
+  [-120,120].forEach(sx=>{
+    line(g,px(sx),py(peelY_top),px(sx),py(peelY_top-240));
+    ellipse(g,px(sx),py(peelY_top-218),ps(15),ps(7.5));
+    rect(g,px(sx-10),py(peelY_top-232),ps(20),ps(8));
+    rect(g,px(sx-2),py(peelY_top-232-6),ps(4),ps(16));
+    rect(g,px(sx+2),py(peelY_top-232-6),ps(4),ps(16));
+    rect(g,px(sx-10),py(peelY_top-258),ps(20),ps(150),{lw:'0.25'});
+  });
+  const wR=18;
+  [[-L/2+P/2],[L/2-P/2]].forEach(([wx])=>{
+    const wcy=-WH+wR;
+    circle(g,px(wx),py(wcy),ps(wR));
+    circle(g,px(wx),py(wcy),ps(3));
+    rect(g,px(wx-16),py(0),ps(32),ps(5));
+    line(g,px(wx-11),py(0),px(wx-11),py(wcy+wR+4));
+    line(g,px(wx+11),py(0),px(wx+11),py(wcy+wR+4));
+    line(g,px(wx-11),py(wcy+wR+4),px(wx-7),py(wcy+wR+4));
+    line(g,px(wx+11),py(wcy+wR+4),px(wx+7),py(wcy+wR+4));
+    line(g,px(wx-7),py(wcy+wR+4),px(wx-7),py(wcy-wR*0.5));
+    line(g,px(wx+7),py(wcy+wR+4),px(wx+7),py(wcy-wR*0.5));
+  });
+  dimLine(g,px(-L/2),py(-WH-5),px(L/2),py(-WH-5),'600',8,'h');
+  dimLine(g,px(L/2+5),py(0),px(L/2+5),py(H+P),'330',-8,'v');
+  dimLine(g,px(L/2+15),py(-WH),px(L/2+15),py(0),'62',-8,'v');
+  dimLine(g,px(-BL/2),py(H+P+BT+5),px(BL/2),py(H+P+BT+5),'500',-5,'h');
+  callout(g,2,px(-L/2-40),py(P/2),px(-L/2),py(P/2));
+  callout(g,8,px(-L/2-40),py(H/2+P),px(-L/2+P/2),py(H/2+P));
+  callout(g,11,px(BL/2+30),py(H+P+BT/2),px(BL/2),py(H+P+BT/2));
+  callout(g,13,px(80),py(P+7+32+70),px(actBodyW/2),py(P+7+32+70));
+  callout(g,18,px(30),py(H+P-15),px(6),py(H-10));
+  callout(g,20,px(-120-60),py(peelY_top-218),px(-120-15),py(peelY_top-218));
+  callout(g,25,px(120+60),py(peelY_top-232),px(120+10),py(peelY_top-232));
+  callout(g,28,px(120+60),py(peelY_top-330),px(120+10),py(peelY_top-330));
+  callout(g,29,px(L/2+30),py(-WH+wR),px(L/2-P/2+wR),py(-WH+wR));
+}
+
+/* ==================== 图3: 左视图 (侧视图) ==================== */
+function drawLeftView(svg){
+  titleBlock(svg,3,'左视图（侧视图）','1∶3');
+  const s=1/3;
+  const cx=105,cy=165;
+  function px(z){return cx+z*s;}
+  function py(y){return cy-y*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  rect(g,px(-W/2),py(P),ps(W),ps(P));
+  rect(g,px(-W/2),py(H+P),ps(W),ps(P));
+  rect(g,px(-W/2),py(H),ps(P),ps(H-P));
+  rect(g,px(W/2-P),py(H),ps(P),ps(H-P));
+  rect(g,px(-W/2+P),py(H),ps(P),ps(H-P),{dash:true});
+  rect(g,px(W/2-2*P),py(H),ps(P),ps(H-P),{dash:true});
+  rect(g,px(-P/2),py(H+P+BT),ps(P),ps(BT));
+  const actBotY=P+7;
+  rect(g,px(-80/2+35/2),py(P+7),ps(80),ps(7));
+  const mCz=35+24-67/2;
+  rect(g,px(mCz-67/2),py(P+7+32),ps(67),ps(32));
+  circle(g,px(mCz),py(P+7+16),ps(18),{lw:'0.2'});
+  rect(g,px(-62/2+mCz*0.4),py(P+7+32+14),ps(62),ps(14));
+  const actSideW=36;
+  rect(g,px(-actSideW/2),py(actBotY+46+130),ps(actSideW),ps(130));
+  line(g,px(-6),py(actBotY+46+130),px(-6),py(H+P));
+  line(g,px(6),py(actBotY+46+130),px(6),py(H+P));
+  const wR=18;
+  [[-W/2+P/2],[W/2-P/2]].forEach(([wz])=>{
+    const wcy=-WH+wR;
+    circle(g,px(wz),py(wcy),ps(wR));
+    circle(g,px(wz),py(wcy),ps(3));
+    rect(g,px(wz-16),py(0),ps(32),ps(5));
+    line(g,px(wz),py(0),px(wz),py(wcy+wR+4));
+  });
+  dimLine(g,px(-W/2),py(-WH-5),px(W/2),py(-WH-5),'120',8,'h');
+  dimLine(g,px(W/2+5),py(0),px(W/2+5),py(H+P+BT),'340',-8,'v');
+  dimLine(g,px(W/2+15),py(-WH),px(W/2+15),py(0),'62',-8,'v');
+  callout(g,3,px(-W/2-30),py(P/2),px(-W/2),py(P/2));
+  callout(g,8,px(-W/2-30),py(H/2+P),px(-W/2+P/2),py(H/2+P));
+  callout(g,15,px(mCz+67/2+25),py(P+7+16),px(mCz+67/2),py(P+7+16));
+  callout(g,29,px(W/2+25),py(-WH+wR),px(W/2-P/2+wR),py(-WH+wR));
+}
+
+/* ==================== 图4: 俯视图 (顶视图) ==================== */
+function drawTopView(svg){
+  titleBlock(svg,4,'俯视图（顶视图）','1∶4');
+  const s=1/4;
+  const cx=110,cy=140;
+  function px(x){return cx+x*s;}
+  function pz(z){return cy+z*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  rect(g,px(-L/2),pz(-W/2),ps(L),ps(P),{dash:true});
+  rect(g,px(-L/2),pz(W/2-P),ps(L),ps(P),{dash:true});
+  rect(g,px(-L/2),pz(-W/2+P),ps(P),ps(W-2*P),{dash:true});
+  rect(g,px(L/2-P),pz(-W/2+P),ps(P),ps(W-2*P),{dash:true});
+  rect(g,px(-BL/2),pz(-P/2),ps(BL),ps(P),{lw:'0.5'});
+  for(let hx=0;hx<=BL/2-8;hx+=20){
+    circle(g,px(hx),pz(0),3*s/2,{lw:'0.2'});
+    if(hx>0) circle(g,px(-hx),pz(0),3*s/2,{lw:'0.2'});
+  }
+  rect(g,px(-L/2),pz(-W/2),ps(L),ps(W),{lw:'0.6'});
+  rect(g,px(-18),pz(-18),ps(36),ps(36),{dash:true});
+  [-120,120].forEach(sx=>{
+    circle(g,px(sx),pz(0),1.5);
+    text(g,px(sx),pz(0)-3.5,'剥离点',2);
+  });
+  dimLine(g,px(-L/2),pz(W/2+5),px(L/2),pz(W/2+5),'600',-6,'h');
+  dimLine(g,px(L/2+5),pz(-W/2),px(L/2+5),pz(W/2),'120',-6,'v');
+  dimLine(g,px(-BL/2),pz(-P/2-8),px(BL/2),pz(-P/2-8),'500',6,'h');
+  callout(g,11,px(BL/2+30),pz(0),px(BL/2),pz(0));
+  callout(g,12,px(60),pz(-P/2-15),px(60),pz(-P/2));
+  callout(g,1,px(-L/2-30),pz(0),px(-L/2),pz(0));
+}
+
+/* ==================== 图5: 电动推杆放大图 ==================== */
+function drawActuatorDetail(svg){
+  titleBlock(svg,5,'电动推杆局部放大图','2∶1');
+  const s=2;
+  const cx=105,cy=200;
+  function px(x){return cx+x*s;}
+  function py(y){return cy-y*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  rect(g,px(-30),py(7),ps(60),ps(7));
+  [[-24,-32],[24,-32],[-24,32],[24,32]].forEach(([bx,bz])=>{
+    circle(g,px(bx),py(3),ps(3),{lw:'0.2',fill:'#000'});
+  });
+  rect(g,px(-24),py(7+32),ps(48),ps(32));
+  circle(g,px(0),py(7+16),ps(18),{lw:'0.3'});
+  circle(g,px(0),py(7+16),ps(20),{lw:'0.2'});
+  rect(g,px(-21),py(7+32+14),ps(42),ps(14));
+  rect(g,px(-18),py(7+46+130),ps(36),ps(130));
+  rect(g,px(-19),py(7+46+10),ps(38),ps(10));
+  rect(g,px(-19),py(7+46+130-5),ps(38),ps(10));
+  rect(g,px(-20),py(7+46+40),ps(40),ps(3),{lw:'0.2'});
+  rect(g,px(-20),py(7+46+90),ps(40),ps(3),{lw:'0.2'});
+  line(g,px(-6),py(7+46+130),px(-6),py(7+46+130+40));
+  line(g,px(6),py(7+46+130),px(6),py(7+46+130+40));
+  circle(g,px(0),py(7+46+130+45),ps(10),{lw:'0.3'});
+  line(g,px(-12.5),py(7+46+130+45),px(12.5),py(7+46+130+45));
+  callout(g,14,px(-30-8),py(3.5),px(-30),py(3.5));
+  callout(g,15,px(24+8),py(7+16),px(24),py(7+16));
+  callout(g,16,px(-21-8),py(7+32+7),px(-21),py(7+32+7));
+  callout(g,17,px(18+8),py(7+46+65),px(18),py(7+46+65));
+  callout(g,18,px(6+10),py(7+46+130+20),px(6),py(7+46+130+20));
+  callout(g,19,px(12.5+8),py(7+46+130+45),px(12.5),py(7+46+130+45));
+  callout(g,21,px(-24-8),py(3),px(-24),py(3));
+  dimLine(g,px(-30),py(-3),px(30),py(-3),'60',5,'h');
+  dimLine(g,px(-18-5),py(7+46),px(-18-5),py(7+46+130),'130',5,'v');
+}
+
+/* ==================== 图6: 钳形夹具放大图 ==================== */
+function drawClampDetail(svg){
+  titleBlock(svg,6,'钳形夹具与力传感器局部放大图','3∶1');
+  const s=3;
+  const cx=105,cy=155;
+  function px(x){return cx+x*s;}
+  function py(y){return cy-y*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  line(g,px(0),py(25),px(0),py(13));
+  circle(g,px(0),py(25),ps(4),{fill:'#000'});
+  ellipse(g,px(0),py(7),ps(15),ps(7.5));
+  circle(g,px(0),py(7+10),ps(4),{lw:'0.2'});
+  circle(g,px(0),py(7-10),ps(4),{lw:'0.2'});
+  line(g,px(0),py(7),px(0),py(-5));
+  rect(g,px(-10),py(0),ps(20),ps(8));
+  rect(g,px(-2),py(-4),ps(4),ps(16));
+  rect(g,px(2),py(-4),ps(4),ps(16));
+  rect(g,px(-1.5),py(-15),ps(3),ps(6));
+  rect(g,px(1.5),py(-15),ps(3),ps(6));
+  circle(g,px(0),py(0),ps(2),{lw:'0.2'});
+  circle(g,px(0),py(-22),ps(10),{lw:'0.3'});
+  line(g,px(0),py(0),px(0),py(-22+10));
+  rect(g,px(-10),py(-18),ps(20),ps(3));
+  rect(g,px(-10),py(-18-150),ps(20),ps(150),{lw:'0.25'});
+  callout(g,24,px(15),py(25),px(4),py(25));
+  callout(g,20,px(20),py(7),px(15),py(7));
+  callout(g,21,px(15),py(17),px(4),py(17));
+  callout(g,23,px(-15),py(18),px(-1.8),py(18));
+  callout(g,25,px(-18),py(-2),px(-10),py(-2));
+  callout(g,26,px(-18),py(-10),px(-6),py(-10));
+  callout(g,27,px(18),py(-22),px(10),py(-22));
+  callout(g,28,px(18),py(-90),px(10),py(-90));
+  dimLine(g,px(-10),py(12),px(10),py(12),'20',-5,'h');
+  dimLine(g,px(-15),py(14),px(15),py(14),'30 (传感器宽)',5,'h');
+}
+
+/* ==================== 图7: 支撑轮放大图 ==================== */
+function drawWheelDetail(svg){
+  titleBlock(svg,7,'支撑轮局部放大图','2∶1');
+  const s=2;
+  const cx=105,cy=150;
+  function px(x){return cx+x*s;}
+  function py(y){return cy-y*s;}
+  function ps(d){return Math.abs(d*s);}
+  const g=el(svg,'g');
+  const wR=18,plateH=5,forkSplit=wR+4;
+  rect(g,px(-16),py(0),ps(32),ps(plateH));
+  [[-10,-10],[10,-10],[-10,10],[10,10]].forEach(([bx,bz])=>{
+    circle(g,px(bx),py(-plateH/2),ps(2),{fill:'#000',lw:'0.15'});
+  });
+  rect(g,px(-11),py(-plateH),ps(22),ps(plateH+forkSplit-wR-4));
+  rect(g,px(-11),py(-plateH),ps(4),ps(forkSplit+wR*0.5));
+  rect(g,px(7),py(-plateH),ps(4),ps(forkSplit+wR*0.5));
+  const wcy=-WH+wR;
+  circle(g,px(0),py(wcy),ps(wR));
+  circle(g,px(0),py(wcy),ps(wR*0.4));
+  circle(g,px(0),py(wcy),ps(3),{fill:'#000',lw:'0.15'});
+  line(g,px(-wR-7),py(wcy),px(wR+7),py(wcy),false);
+  callout(g,30,px(20),py(-plateH/2),px(16),py(-plateH/2));
+  callout(g,31,px(-20),py(-plateH-10),px(-11),py(-plateH-10));
+  callout(g,29,px(wR+15),py(wcy),px(wR),py(wcy));
+  callout(g,32,px(wR+15),py(wcy+12),px(3),py(wcy));
+  dimLine(g,px(-wR),py(wcy+wR+5),px(wR),py(wcy+wR+5),'ø36',-5,'h');
+  dimLine(g,px(-16-5),py(-WH),px(-16-5),py(0),'62',5,'v');
+}
+
+/* ==================== 初始化 ==================== */
+[
+  [1,drawIsometric],
+  [2,drawFrontView],
+  [3,drawLeftView],
+  [4,drawTopView],
+  [5,drawActuatorDetail],
+  [6,drawClampDetail],
+  [7,drawWheelDetail]
+].forEach(([n,fn])=>{
+  const svg=makePage(n);
+  fn(svg);
+});
+</script>
+</body>
+</html>
