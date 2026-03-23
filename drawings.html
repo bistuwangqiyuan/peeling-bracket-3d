@@ -159,13 +159,10 @@ function drawIsometric(svg){
     line(g2,a,b,c,d,dash);
   }
   function isoBox(g2,x,y,z,w,h,d){
-    iL(g2,x,y,z,x+w,y,z);iL(g2,x,y,z,x,y+h,z);iL(g2,x+w,y,z,x+w,y+h,z);
-    iL(g2,x,y+h,z,x+w,y+h,z);
-    iL(g2,x+w,y,z,x+w,y,z+d);iL(g2,x+w,y+h,z,x+w,y+h,z+d);
-    iL(g2,x+w,y,z+d,x+w,y+h,z+d);
-    iL(g2,x,y+h,z,x,y+h,z+d);iL(g2,x+w,y+h,z,x+w,y+h,z+d);
-    iL(g2,x,y+h,z+d,x+w,y+h,z+d);
-    iL(g2,x,y+h,z,x,y+h,z+d);
+    var X=x+w,Y=y+h,Z=z+d;
+    iL(g2,x,y,z,X,y,z);iL(g2,X,y,z,X,y,Z);iL(g2,X,y,Z,x,y,Z);iL(g2,x,y,Z,x,y,z);
+    iL(g2,x,Y,z,X,Y,z);iL(g2,X,Y,z,X,Y,Z);iL(g2,X,Y,Z,x,Y,Z);iL(g2,x,Y,Z,x,Y,z);
+    iL(g2,x,y,z,x,Y,z);iL(g2,X,y,z,X,Y,z);iL(g2,X,y,Z,X,Y,Z);iL(g2,x,y,Z,x,Y,Z);
   }
   const bx=-L/2,bz=-W/2;
   isoBox(g,bx,0,bz,L,P,P);
@@ -190,11 +187,14 @@ function drawIsometric(svg){
       circle(g,hcx,hcy,0.9*s,{lw:'0.15'});
     });
   }
-  const actW2=36,actD2=36,actH2=130,actBase=P+7+14;
+  isoBox(g,-30,P,-40+35/2,60,7,80);
+  isoBox(g,-24,P+7,-67/2+35,48,32,67);
+  isoBox(g,-21,P+7+32,-31*0.4+12,42,14,62);
+  const actW2=36,actD2=36,actH2=130,actBase=P+7+32+14;
   isoBox(g,-actW2/2,actBase,-actD2/2,actW2,actH2,actD2);
   const rodBot=actBase+actH2,rodTop=H+P;
   iL(g,-3,rodBot,0,-3,rodTop,0);iL(g,3,rodBot,0,3,rodTop,0);
-  isoBox(g,-24,P+7,-67/2+35,48,32,67);
+  iL(g,-3,rodBot,3,-3,rodTop,3);iL(g,3,rodBot,3,3,rodTop,3);
   const peelY=bmY;
   [[-120,0],[120,0]].forEach(([plx,plz])=>{
     const[sx2,sy2]=iso(plx,peelY,plz);
@@ -214,8 +214,16 @@ function drawIsometric(svg){
     const wcy=-WH+wheelR;
     const[wcx2,wcy2]=iso(wx,wcy,wz);
     ellipse(g,wcx2,wcy2,wheelR*s*0.8,wheelR*s*0.5);
+    const[wcx3,wcy3]=iso(wx,wcy,wz);
+    circle(g,wcx3,wcy3,3*s,{lw:'0.15'});
     const[ftx,fty]=iso(wx,0,wz);
-    line(g,ftx,fty,wcx2,wcy2+wheelR*s*0.5);
+    const[ftx2,fty2]=iso(wx,-5,wz);
+    iL(g,wx,0,wz,wx,-5,wz);
+    const[fL,fLy]=iso(wx-7,-5,wz),[fR,fRy]=iso(wx+7,-5,wz);
+    const[fLb,fLyb]=iso(wx-7,wcy-wheelR*0.5,wz),[fRb,fRyb]=iso(wx+7,wcy-wheelR*0.5,wz);
+    line(g,fL,fLy,fLb,fLyb);line(g,fR,fRy,fRb,fRyb);
+    line(g,fL,fLy,fR,fRy);
+    iL(g,wx-wheelR,wcy,wz,wx+wheelR,wcy,wz);
   });
   callout(g,1,...iso(-L/2-25,P/2,0).map((v,i)=>i===0?v-6:v),...iso(-L/2,P/2,-W/2));
   callout(g,8,...iso(-L/2-25,H/2,0).map((v,i)=>i===0?v-6:v),...iso(-L/2+P/2,H/2,-W/2));

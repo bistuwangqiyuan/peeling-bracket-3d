@@ -95,12 +95,10 @@ function drawIso(svg){
   function iso(x,y,z){return[(x-z)*cos30*s,(-y+(x+z)*sin30)*s];}
   function iL(g2,x1,y1,z1,x2,y2,z2,dash){const[a,b]=iso(x1,y1,z1),[c,d]=iso(x2,y2,z2);line(g2,a,b,c,d,dash);}
   function isoBox(g2,x,y,z,w,h,d){
-    iL(g2,x,y,z,x+w,y,z);iL(g2,x,y,z,x,y+h,z);iL(g2,x+w,y,z,x+w,y+h,z);
-    iL(g2,x,y+h,z,x+w,y+h,z);
-    iL(g2,x+w,y,z,x+w,y,z+d);iL(g2,x+w,y+h,z,x+w,y+h,z+d);
-    iL(g2,x+w,y,z+d,x+w,y+h,z+d);
-    iL(g2,x,y+h,z,x,y+h,z+d);iL(g2,x+w,y+h,z+d,x,y+h,z+d);
-    iL(g2,x,y+h,z,x,y+h,z+d);
+    var X=x+w,Y=y+h,Z=z+d;
+    iL(g2,x,y,z,X,y,z);iL(g2,X,y,z,X,y,Z);iL(g2,X,y,Z,x,y,Z);iL(g2,x,y,Z,x,y,z);
+    iL(g2,x,Y,z,X,Y,z);iL(g2,X,Y,z,X,Y,Z);iL(g2,X,Y,Z,x,Y,Z);iL(g2,x,Y,Z,x,Y,z);
+    iL(g2,x,y,z,x,Y,z);iL(g2,X,y,z,X,Y,z);iL(g2,X,y,Z,X,Y,Z);iL(g2,x,y,Z,x,Y,Z);
   }
   const bx=-L/2,bz=-W/2;
   isoBox(g,bx,0,bz,L,P,P);isoBox(g,bx,0,bz+W-P,L,P,P);
@@ -124,7 +122,12 @@ function drawIso(svg){
   [[-L/2+P/2,-W/2+P/2],[L/2-P/2,-W/2+P/2],[-L/2+P/2,W/2-P/2],[L/2-P/2,W/2-P/2]].forEach(([wx,wz])=>{
     const wcy=-WH+18;const[wcx2,wcy2]=iso(wx,wcy,wz);
     ellipse(g,wcx2,wcy2,18*s*0.8,18*s*0.5);
-    const[ftx,fty]=iso(wx,0,wz);line(g,ftx,fty,wcx2,wcy2+18*s*0.5);
+    circle(g,wcx2,wcy2,3*s,{lw:'0.15'});
+    iL(g,wx,0,wz,wx,-5,wz);
+    const[fL,fLy]=iso(wx-7,-5,wz),[fR,fRy]=iso(wx+7,-5,wz);
+    const[fLb,fLyb]=iso(wx-7,wcy-9,wz),[fRb,fRyb]=iso(wx+7,wcy-9,wz);
+    line(g,fL,fLy,fLb,fLyb);line(g,fR,fRy,fRb,fRyb);line(g,fL,fLy,fR,fRy);
+    iL(g,wx-18,wcy,wz,wx+18,wcy,wz);
   });
 }
 
