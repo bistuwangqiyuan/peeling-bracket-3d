@@ -172,7 +172,7 @@ const carGroup = new THREE.Group(); carGroup.userData.partName = '轨道爬车';
 const bracketGroup = new THREE.Group(); bracketGroup.userData.partName = '剥离支架';
 
 /* ========== 1. Pipe (DN1200, 1219mm OD, 12mm wall) ========== */
-const pipeR = 0.6095, pipeIR = 0.5975, pipeLen = 1.2;
+const pipeR = 0.6095, pipeIR = 0.5975, pipeLen = 1.5;
 
 const outerShell = new THREE.Mesh(
     new THREE.CylinderGeometry(pipeR, pipeR, pipeLen, 64, 1, true), matPipe
@@ -226,46 +226,50 @@ trackPositions.forEach(zPos => {
 });
 rootGroup.add(trackGroup);
 
-/* ========== 3. Crawler Car (at top of pipe, on middle track) ========== */
-const carAngle = Math.PI / 2;
+/* ========== 3. Crawler Car (~300x300mm, at top of pipe) ========== */
 const carR = pipeR + trackH;
 const carCenterY = carR;
 
-const carBodyW = 0.14, carBodyH = 0.06, carBodyD = 0.10;
+const carBodyW = 0.28, carBodyH = 0.08, carBodyD = 0.30;
 addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
     matCarBody, 0, carCenterY + carBodyH/2, 0, { castShadow: true });
 
-addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH*0.7, carBodyD),
-    matCarBody, 0, carCenterY + carBodyH/2, -0.30, { castShadow: true });
-addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH*0.7, carBodyD),
-    matCarBody, 0, carCenterY + carBodyH/2, 0.30, { castShadow: true });
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW + 0.02, 0.006, carBodyD + 0.02),
+    matCarPlate, 0, carCenterY + carBodyH, 0, { castShadow: true });
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW + 0.02, 0.006, carBodyD + 0.02),
+    matCarPlate, 0, carCenterY, 0);
 
 [-0.30, 0, 0.30].forEach(tz => {
     [-1, 1].forEach(sx => {
-        addMesh(carGroup, new THREE.CylinderGeometry(0.015, 0.015, 0.025, 16),
-            matCarPlate, sx * (carBodyW/2 + 0.005), carCenterY - 0.005, tz,
+        addMesh(carGroup, new THREE.CylinderGeometry(0.018, 0.018, 0.030, 16),
+            matCarPlate, sx * (carBodyW/2 + 0.008), carCenterY - 0.008, tz,
             { rz: Math.PI/2, castShadow: true });
     });
 });
 
-const plateW = 0.20, plateH2 = 0.15, plateT = 0.008;
-const plateY = carCenterY + carBodyH;
-addMesh(carGroup, new THREE.BoxGeometry(plateW, plateT, plateH2),
-    matCarPlate, 0, plateY + plateT/2, 0, { castShadow: true });
-
-[[-0.06, -0.04], [0.06, -0.04], [-0.06, 0.04], [0.06, 0.04]].forEach(([bx, bz]) => {
-    addMesh(carGroup, new THREE.CylinderGeometry(0.004, 0.004, plateT + 0.01, 8),
-        matBolt, bx, plateY + plateT/2, bz);
+[-1, 1].forEach(sx => {
+    addMesh(carGroup, new THREE.BoxGeometry(0.025, carBodyH * 0.6, carBodyD - 0.04),
+        matCarBody, sx * (carBodyW/2 - 0.015), carCenterY + carBodyH * 0.7, 0, { castShadow: true });
 });
 
-addMesh(carGroup, new THREE.BoxGeometry(0.08, 0.012, 0.12),
-    matCarBody, 0.09, carCenterY + carBodyH * 0.3, 0, { castShadow: true });
+addMesh(carGroup, new THREE.BoxGeometry(0.06, 0.04, 0.08),
+    matCarPlate, 0, carCenterY + carBodyH + 0.023, 0, { castShadow: true });
+
+const plateY = carCenterY + carBodyH + 0.006;
+const mountPlateW = 0.30, mountPlateD = 0.32, mountPlateT = 0.008;
+addMesh(carGroup, new THREE.BoxGeometry(mountPlateW, mountPlateT, mountPlateD),
+    matCarPlate, 0, plateY + mountPlateT/2 + 0.04, 0, { castShadow: true });
+
+[[-0.10,-0.12],[0.10,-0.12],[-0.10,0.12],[0.10,0.12],[-0.10,0],[0.10,0]].forEach(([bx,bz]) => {
+    addMesh(carGroup, new THREE.CylinderGeometry(0.004, 0.004, mountPlateT + 0.01, 8),
+        matBolt, bx, plateY + mountPlateT/2 + 0.04, bz);
+});
 
 rootGroup.add(carGroup);
 
-/* ========== 4. Peeling Bracket (simplified, with wheels) ========== */
+/* ========== 4. Peeling Bracket (simplified, rotated parallel to pipe) ========== */
 const P = 0.03, L = 0.6, W = 0.12, H = 0.30;
-const bracketBaseY = plateY + plateT;
+const bracketBaseY = plateY + mountPlateT + 0.04;
 
 function make3030(len, axis) {
     const g = new THREE.Group();
@@ -402,6 +406,8 @@ function makeSupportWheel(px, pz) {
     makeSupportWheel(sx*(L/2-P/2), sz*(W/2-P/2));
 });
 
+bracketGroup.rotation.y = Math.PI / 2;
+
 rootGroup.add(bracketGroup);
 scene.add(rootGroup);
 
@@ -426,9 +432,9 @@ function makeLabel(text, px, py, pz, color) {
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道', pipeR + 0.15, 0.3, 0.30, '#7f8c8d'));
-rootGroup.add(makeLabel('轨道爬车', 0.18, carCenterY + carBodyH + 0.04, 0, '#c0392b'));
-rootGroup.add(makeLabel('剥离支架', 0, beamY + 0.04, 0.12, '#2980b9'));
-rootGroup.add(makeLabel('安装板', 0.15, plateY + 0.02, 0.10, '#8e44ad'));
+rootGroup.add(makeLabel('轨道爬车 (300×300)', 0.25, carCenterY + carBodyH + 0.06, 0.18, '#c0392b'));
+rootGroup.add(makeLabel('剥离支架 (与管道平行)', 0.18, beamY + 0.04, 0, '#2980b9'));
+rootGroup.add(makeLabel('安装板', 0.20, bracketBaseY - 0.02, 0.18, '#8e44ad'));
 
 /* ========== Ground ========== */
 const ground = new THREE.Mesh(
