@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>管道爬车+剥离支架 组合3D模型</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#fff;overflow:hidden;font-family:'Microsoft YaHei','PingFang SC',sans-serif}
+canvas{display:block}
+#info-toggle{position:absolute;top:16px;left:16px;z-index:11;width:38px;height:38px;border:1px solid #ddd;border-radius:10px;background:rgba(255,255,255,.94);color:#666;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 12px rgba(0,0,0,.06);backdrop-filter:blur(6px);transition:all .15s;line-height:1}
+#info-toggle:hover,#info-toggle.open{background:#4a90d9;color:#fff;border-color:#4a90d9}
+#info-panel{position:absolute;top:16px;left:62px;background:rgba(255,255,255,.96);border:1px solid #e0e0e0;border-radius:12px;padding:18px 20px;box-shadow:0 4px 24px rgba(0,0,0,.07);max-width:260px;z-index:10;backdrop-filter:blur(8px);display:none}
+#info-panel.show{display:block}
+#info-panel h2{font-size:14px;color:#222;margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid #4a90d9;letter-spacing:1px}
+.info-row{display:flex;justify-content:space-between;margin:4px 0;font-size:12px}
+.info-row .lbl{color:#888}.info-row .val{color:#333;font-weight:600}
+.section-title{font-size:11px;color:#4a90d9;margin-top:10px;padding-top:8px;border-top:1px solid #eee;font-weight:600}
+#view-bar{position:absolute;bottom:50px;right:20px;display:flex;flex-direction:column;gap:6px;z-index:10}
+#view-bar button{width:72px;padding:8px 0;border:1px solid #ddd;border-radius:8px;background:rgba(255,255,255,.94);color:#555;font-size:12px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.06);transition:all .15s;backdrop-filter:blur(6px);font-family:inherit}
+#view-bar button:hover{background:#4a90d9;color:#fff;border-color:#4a90d9}
+#toggle-bar{position:absolute;top:20px;left:50%;transform:translateX(-50%);display:flex;gap:0;z-index:10}
+#toggle-bar button{padding:8px 14px;border:1px solid #ddd;background:rgba(255,255,255,.94);color:#777;font-size:12px;cursor:pointer;transition:all .15s;backdrop-filter:blur(6px);font-family:inherit}
+#toggle-bar button:first-child{border-radius:8px 0 0 8px}
+#toggle-bar button:last-child{border-radius:0 8px 8px 0}
+#toggle-bar button+button{border-left:none}
+#toggle-bar button.active{background:#4a90d9;color:#fff;border-color:#4a90d9}
+#doc-links{position:absolute;bottom:50px;left:20px;display:flex;flex-direction:column;gap:6px;z-index:10}
+#doc-links a{padding:8px 14px;border:1px solid #ddd;border-radius:8px;background:rgba(255,255,255,.94);color:#555;font-size:12px;text-decoration:none;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.06);backdrop-filter:blur(6px);transition:all .15s;font-family:inherit}
+#doc-links a:hover{background:#4a90d9;color:#fff;border-color:#4a90d9}
+#hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.92);padding:7px 22px;border-radius:18px;font-size:11.5px;color:#aaa;box-shadow:0 2px 12px rgba(0,0,0,.04);white-space:nowrap}
+#sel-bar{position:absolute;top:20px;right:20px;background:rgba(255,255,255,.96);border:1px solid #e0e0e0;border-radius:10px;padding:14px 18px;box-shadow:0 4px 20px rgba(0,0,0,.07);z-index:10;display:none;backdrop-filter:blur(8px);min-width:180px}
+#sel-bar .sel-title{font-size:12px;color:#999;margin-bottom:6px}
+#sel-bar .sel-name{font-size:14px;font-weight:600;color:#333;margin-bottom:12px}
+</style>
+</head>
+<body>
+
+<button id="info-toggle" title="参数与图例">···</button>
+<div id="info-panel">
+    <h2>管道爬车+剥离支架 组合</h2>
+    <div class="section-title">管道参数</div>
+    <div class="info-row"><span class="lbl">管道直径</span><span class="val">DN1200 (1219mm)</span></div>
+    <div class="info-row"><span class="lbl">壁厚</span><span class="val">12 mm</span></div>
+    <div class="info-row"><span class="lbl">管段长度</span><span class="val">1200 mm</span></div>
+    <div class="section-title">爬行轨道</div>
+    <div class="info-row"><span class="lbl">轨道数量</span><span class="val">3 道环轨</span></div>
+    <div class="info-row"><span class="lbl">轨道间距</span><span class="val">300 mm</span></div>
+    <div class="info-row"><span class="lbl">链节齿条</span><span class="val">全周分布</span></div>
+    <div class="section-title">轨道爬车</div>
+    <div class="info-row"><span class="lbl">驱动方式</span><span class="val">齿轮啮合</span></div>
+    <div class="info-row"><span class="lbl">安装板</span><span class="val">200×150 mm</span></div>
+    <div class="section-title">剥离支架</div>
+    <div class="info-row"><span class="lbl">底座</span><span class="val">600×120 mm</span></div>
+    <div class="info-row"><span class="lbl">横梁</span><span class="val">500×30×10 mm</span></div>
+    <div class="info-row"><span class="lbl">驱动</span><span class="val">双电动推杆</span></div>
+    <div class="info-row"><span class="lbl">测试通道</span><span class="val">双通道</span></div>
+    <div class="info-row"><span class="lbl">支撑轮</span><span class="val">62mm ×4</span></div>
+</div>
+
+<div id="sel-bar">
+    <div class="sel-title">已选中组件</div>
+    <div class="sel-name" id="sel-name-text"></div>
+</div>
+
+<div id="toggle-bar">
+    <button id="btn-pipe" class="active">管道</button>
+    <button id="btn-track" class="active">轨道</button>
+    <button id="btn-car" class="active">爬车</button>
+    <button id="btn-bracket" class="active">支架</button>
+</div>
+
+<div id="view-bar">
+    <button id="btn-front">前视图</button>
+    <button id="btn-left">左视图</button>
+    <button id="btn-top">上视图</button>
+</div>
+
+<div id="doc-links">
+    <a href="index.html">单体支架</a>
+    <a href="drawings.html">2D附图</a>
+    <a href="patent.html">专利文档</a>
+</div>
+
+<div id="hint">左键旋转 | 右键平移 | 滚轮缩放 | 点击选中组件</div>
+
+<script type="importmap">
+{ "imports": { "three": "https://esm.sh/three@0.160.0", "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/" } }
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f2f5);
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.01, 100);
+camera.position.set(2.2, 1.4, 2.0);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(innerWidth, innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.1;
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.target.set(0, 0.45, 0);
+controls.minDistance = 0.5;
+controls.maxDistance = 8;
+
+scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+const sun = new THREE.DirectionalLight(0xffffff, 1.0);
+sun.position.set(3, 5, 4); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 0.5; sun.shadow.camera.far = 20;
+sun.shadow.camera.left = -3; sun.shadow.camera.right = 3;
+sun.shadow.camera.top = 3; sun.shadow.camera.bottom = -3;
+scene.add(sun);
+scene.add(new THREE.DirectionalLight(0xc0d8f0, 0.3).translateX(-3).translateY(3));
+scene.add(new THREE.DirectionalLight(0xfff0e0, 0.2).translateZ(-4).translateY(1));
+
+/* ========== Materials ========== */
+const matPipe = new THREE.MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0.85, roughness: 0.15, side: THREE.DoubleSide });
+const matPipeInner = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.7, roughness: 0.3, side: THREE.BackSide });
+const matTrack = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.25 });
+const matTooth = new THREE.MeshStandardMaterial({ color: 0x666666, metalness: 0.75, roughness: 0.3 });
+const matCarBody = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, metalness: 0.6, roughness: 0.4 });
+const matCarPlate = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.7, roughness: 0.3 });
+const matAluminum = new THREE.MeshStandardMaterial({ color: 0xe2e2ea, metalness: 0.90, roughness: 0.10 });
+const matGroove = new THREE.MeshStandardMaterial({ color: 0xc0c0cc, metalness: 0.82, roughness: 0.18 });
+const matActBody = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.40, roughness: 0.55 });
+const matActCap = new THREE.MeshStandardMaterial({ color: 0x303030, metalness: 0.50, roughness: 0.40 });
+const matRod = new THREE.MeshStandardMaterial({ color: 0xdcdcdc, metalness: 0.95, roughness: 0.04 });
+const matSensor = new THREE.MeshStandardMaterial({ color: 0xe0e0ec, metalness: 0.88, roughness: 0.12 });
+const matWire = new THREE.MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0.85, roughness: 0.15 });
+const matBolt = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.85, roughness: 0.18 });
+const matCable = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.20, roughness: 0.70 });
+const matPlate = new THREE.MeshStandardMaterial({ color: 0xb0b0b0, metalness: 0.70, roughness: 0.30 });
+const matClamp = new THREE.MeshStandardMaterial({ color: 0xb8b8b8, metalness: 0.78, roughness: 0.22 });
+const matClampJaw = new THREE.MeshStandardMaterial({ color: 0xa8a8a8, metalness: 0.72, roughness: 0.28 });
+const matKnob = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, metalness: 0.30, roughness: 0.50 });
+const matTape = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.05, roughness: 0.85 });
+const matWheelRubber = new THREE.MeshStandardMaterial({ color: 0x333333, metalness: 0.10, roughness: 0.85 });
+
+function addMesh(parent, geo, mat, x, y, z, opts) {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    if (opts) {
+        if (opts.castShadow) m.castShadow = true;
+        if (opts.receiveShadow) m.receiveShadow = true;
+        if (opts.rx) m.rotation.x = opts.rx;
+        if (opts.ry) m.rotation.y = opts.ry;
+        if (opts.rz) m.rotation.z = opts.rz;
+        if (opts.sx) m.scale.set(opts.sx, opts.sy || 1, opts.sz || 1);
+    }
+    parent.add(m);
+    return m;
+}
+
+const rootGroup = new THREE.Group();
+const pipeGroup = new THREE.Group(); pipeGroup.userData.partName = '管道 DN1200';
+const trackGroup = new THREE.Group(); trackGroup.userData.partName = '爬行轨道';
+const carGroup = new THREE.Group(); carGroup.userData.partName = '轨道爬车';
+const bracketGroup = new THREE.Group(); bracketGroup.userData.partName = '剥离支架';
+
+/* ========== 1. Pipe (DN1200, 1219mm OD, 12mm wall) ========== */
+const pipeR = 0.6095, pipeIR = 0.5975, pipeLen = 1.2;
+
+const outerShell = new THREE.Mesh(
+    new THREE.CylinderGeometry(pipeR, pipeR, pipeLen, 64, 1, true), matPipe
+);
+outerShell.rotation.x = Math.PI / 2;
+outerShell.castShadow = true; outerShell.receiveShadow = true;
+pipeGroup.add(outerShell);
+
+const innerShell = new THREE.Mesh(
+    new THREE.CylinderGeometry(pipeIR, pipeIR, pipeLen, 64, 1, true), matPipeInner
+);
+innerShell.rotation.x = Math.PI / 2;
+pipeGroup.add(innerShell);
+
+[-1, 1].forEach(s => {
+    const ring = new THREE.Mesh(new THREE.RingGeometry(pipeIR, pipeR, 64), matPipe);
+    ring.position.z = s * pipeLen / 2;
+    if (s < 0) ring.rotation.y = Math.PI;
+    pipeGroup.add(ring);
+});
+rootGroup.add(pipeGroup);
+
+/* ========== 2. Crawling Tracks (3 rings) ========== */
+const trackW = 0.022, trackH = 0.018;
+const trackPositions = [-0.30, 0, 0.30];
+
+trackPositions.forEach(zPos => {
+    const tR = pipeR + trackH / 2;
+    const track = new THREE.Mesh(
+        new THREE.TorusGeometry(tR, trackH / 2, 6, 80), matTrack
+    );
+    track.position.z = zPos;
+    track.castShadow = true;
+    trackGroup.add(track);
+
+    const teethCount = 80;
+    for (let i = 0; i < teethCount; i++) {
+        const angle = (i / teethCount) * Math.PI * 2;
+        const toothR = pipeR + trackH;
+        const tooth = new THREE.Mesh(
+            new THREE.BoxGeometry(0.008, 0.006, trackW * 0.6), matTooth
+        );
+        tooth.position.set(
+            Math.cos(angle) * toothR,
+            Math.sin(angle) * toothR,
+            zPos
+        );
+        tooth.rotation.z = angle;
+        trackGroup.add(tooth);
+    }
+});
+rootGroup.add(trackGroup);
+
+/* ========== 3. Crawler Car (at top of pipe, on middle track) ========== */
+const carAngle = Math.PI / 2;
+const carR = pipeR + trackH;
+const carCenterY = carR;
+
+const carBodyW = 0.14, carBodyH = 0.06, carBodyD = 0.10;
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
+    matCarBody, 0, carCenterY + carBodyH/2, 0, { castShadow: true });
+
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH*0.7, carBodyD),
+    matCarBody, 0, carCenterY + carBodyH/2, -0.30, { castShadow: true });
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH*0.7, carBodyD),
+    matCarBody, 0, carCenterY + carBodyH/2, 0.30, { castShadow: true });
+
+[-0.30, 0, 0.30].forEach(tz => {
+    [-1, 1].forEach(sx => {
+        addMesh(carGroup, new THREE.CylinderGeometry(0.015, 0.015, 0.025, 16),
+            matCarPlate, sx * (carBodyW/2 + 0.005), carCenterY - 0.005, tz,
+            { rz: Math.PI/2, castShadow: true });
+    });
+});
+
+const plateW = 0.20, plateH2 = 0.15, plateT = 0.008;
+const plateY = carCenterY + carBodyH;
+addMesh(carGroup, new THREE.BoxGeometry(plateW, plateT, plateH2),
+    matCarPlate, 0, plateY + plateT/2, 0, { castShadow: true });
+
+[[-0.06, -0.04], [0.06, -0.04], [-0.06, 0.04], [0.06, 0.04]].forEach(([bx, bz]) => {
+    addMesh(carGroup, new THREE.CylinderGeometry(0.004, 0.004, plateT + 0.01, 8),
+        matBolt, bx, plateY + plateT/2, bz);
+});
+
+addMesh(carGroup, new THREE.BoxGeometry(0.08, 0.012, 0.12),
+    matCarBody, 0.09, carCenterY + carBodyH * 0.3, 0, { castShadow: true });
+
+rootGroup.add(carGroup);
+
+/* ========== 4. Peeling Bracket (simplified, with wheels) ========== */
+const P = 0.03, L = 0.6, W = 0.12, H = 0.30;
+const bracketBaseY = plateY + plateT;
+
+function make3030(len, axis) {
+    const g = new THREE.Group();
+    const dims = [P, P, P];
+    const idx = axis === 'x' ? 0 : axis === 'y' ? 1 : 2;
+    dims[idx] = len;
+    addMesh(g, new RoundedBoxGeometry(...dims, 4, 0.002), matAluminum, 0, 0, 0, { castShadow: true, receiveShadow: true });
+    const gw = 0.007, gd = 0.0012;
+    [{ a: (idx+1)%3, b: (idx+2)%3 }, { a: (idx+2)%3, b: (idx+1)%3 }].forEach(f => {
+        for (const s of [-1, 1]) {
+            const d2 = [0,0,0]; d2[idx] = len + 0.0005; d2[f.a] = gw; d2[f.b] = gd;
+            const pos = [0,0,0]; pos[f.b] = s * (P / 2);
+            addMesh(g, new THREE.BoxGeometry(...d2), matGroove, ...pos);
+        }
+    });
+    return g;
+}
+
+function placeProfile(len, axis, x, y, z, name) {
+    const p = make3030(len, axis);
+    p.position.set(x, bracketBaseY + y, z);
+    p.userData.partName = name || '3030铝型材';
+    bracketGroup.add(p);
+    return p;
+}
+
+placeProfile(L, 'x', 0, P/2, -W/2 + P/2, '底座长型材(前)');
+placeProfile(L, 'x', 0, P/2,  W/2 - P/2, '底座长型材(后)');
+placeProfile(W - 2*P, 'z', -L/2 + P/2, P/2, 0, '底座横撑(左)');
+placeProfile(W - 2*P, 'z',  L/2 - P/2, P/2, 0, '底座横撑(右)');
+const actSpacing = 0.18;
+placeProfile(W - 2*P, 'z', -actSpacing - 0.025, P/2, 0);
+placeProfile(W - 2*P, 'z', -actSpacing + 0.025, P/2, 0);
+placeProfile(W - 2*P, 'z',  actSpacing - 0.025, P/2, 0);
+placeProfile(W - 2*P, 'z',  actSpacing + 0.025, P/2, 0);
+
+function makeActuator(xPos) {
+    const act = new THREE.Group();
+    act.userData.partName = '电动推杆';
+    const mz = 0.035, plateTop = 0.007;
+    addMesh(act, new THREE.BoxGeometry(0.06, 0.007, 0.08), matAluminum, 0, 0.0035, mz/2, { castShadow: true });
+    const motorH = 0.032, motorCy = plateTop + motorH/2, motorZLen = 0.077;
+    const motorCz = mz + 0.024 - motorZLen/2;
+    addMesh(act, new THREE.BoxGeometry(0.048, motorH, 0.067), matActCap, 0, motorCy, motorCz, { castShadow: true });
+    addMesh(act, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2 });
+    const motorTop = plateTop + motorH, elbowH = 0.014;
+    addMesh(act, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, motorTop + elbowH/2, motorCz*0.4);
+    const bodyBot = motorTop + elbowH, bodyH = 0.13, bodyTop = bodyBot + bodyH;
+    addMesh(act, new THREE.BoxGeometry(0.036, bodyH, 0.036), matActBody, 0, bodyBot + bodyH/2, 0, { castShadow: true });
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyBot + 0.005, 0);
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyTop - 0.005, 0);
+    const rodTopLocal = (H + P + P/2) - P/2 - P;
+    const rodLen = rodTopLocal - bodyTop - 0.006;
+    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, bodyTop + rodLen/2, 0);
+    addMesh(act, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
+    act.position.set(xPos, bracketBaseY + P, 0);
+    bracketGroup.add(act);
+}
+makeActuator(-actSpacing);
+makeActuator(actSpacing);
+
+const BL = 0.50, beamThick = 0.010;
+const beamY = bracketBaseY + H + P + beamThick/2;
+const beamShape = new THREE.Shape();
+beamShape.moveTo(-BL/2, -P/2);
+beamShape.lineTo(BL/2, -P/2);
+beamShape.lineTo(BL/2, P/2);
+beamShape.lineTo(-BL/2, P/2);
+beamShape.closePath();
+for (let hx = 0; hx <= BL/2 - 0.008; hx += 0.020) {
+    const h1 = new THREE.Path(); h1.absarc(hx, 0, 0.003, 0, Math.PI*2, false); beamShape.holes.push(h1);
+    if (hx > 0) { const h2 = new THREE.Path(); h2.absarc(-hx, 0, 0.003, 0, Math.PI*2, false); beamShape.holes.push(h2); }
+}
+const beamGeo = new THREE.ExtrudeGeometry(beamShape, { depth: beamThick, bevelEnabled: false, curveSegments: 16 });
+beamGeo.translate(0, 0, -beamThick/2);
+const topBeam = new THREE.Mesh(beamGeo, matAluminum);
+topBeam.rotation.x = -Math.PI/2;
+topBeam.position.set(0, beamY, 0);
+topBeam.castShadow = true;
+topBeam.userData.partName = '顶部横梁 500mm';
+bracketGroup.add(topBeam);
+
+const peelSpacing = 0.12, peelTopY = beamY - beamThick/2;
+
+function makePeelLineAssembly(sign) {
+    const g = new THREE.Group();
+    g.userData.partName = '剥离线+传感器+夹具';
+    const x = sign * peelSpacing;
+    const clampCy = peelTopY - 0.24, sensorCy = clampCy + 0.022;
+    const tapeTopY2 = clampCy - 0.018, tapeLen = 0.15;
+
+    const pts = [new THREE.Vector3(x, peelTopY, 0), new THREE.Vector3(x, sensorCy + 0.013, 0)];
+    addMesh(g, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 8, 0.0018, 8, false), matWire, 0, 0, 0);
+    addMesh(g, new THREE.SphereGeometry(0.004, 10, 10), matBolt, x, peelTopY, 0);
+
+    const sens = addMesh(g, new THREE.SphereGeometry(0.015, 24, 16), matSensor, x, sensorCy, 0, { castShadow: true });
+    sens.scale.set(1, 0.5, 0.7);
+    addMesh(g, new THREE.CylinderGeometry(0.004, 0.004, 0.006, 12), matBolt, x, sensorCy + 0.010, 0);
+    addMesh(g, new THREE.CylinderGeometry(0.004, 0.004, 0.006, 12), matBolt, x, sensorCy - 0.010, 0);
+
+    const cg = new THREE.Group();
+    addMesh(cg, new THREE.BoxGeometry(0.020, 0.008, 0.014), matClamp, 0, 0, 0);
+    addMesh(cg, new THREE.BoxGeometry(0.004, 0.016, 0.014), matClampJaw, -0.009, -0.004, 0);
+    addMesh(cg, new THREE.BoxGeometry(0.004, 0.016, 0.014), matClampJaw, 0.009, -0.004, 0);
+    const knobR = 0.01;
+    addMesh(cg, new THREE.CylinderGeometry(knobR, knobR, 0.008, 24), matKnob, 0, 0, 0.014, { rx: Math.PI/2 });
+    cg.rotation.y = -Math.PI/2;
+    cg.position.set(x, clampCy, 0);
+    g.add(cg);
+
+    addMesh(g, new THREE.BoxGeometry(0.02, tapeLen, 0.001), matTape, x, tapeTopY2 - tapeLen/2, 0);
+    bracketGroup.add(g);
+}
+makePeelLineAssembly(-1);
+makePeelLineAssembly(1);
+
+const WH = 0.062;
+function makeSupportWheel(px, pz) {
+    const g = new THREE.Group();
+    g.userData.partName = '支撑轮';
+    const wheelR = 0.018, wheelW = 0.014;
+    const wheelCY = -(WH - wheelR);
+    addMesh(g, new THREE.BoxGeometry(0.032, 0.005, 0.032), matPlate, 0, -0.0025, 0, { castShadow: true });
+    addMesh(g, new THREE.BoxGeometry(0.022, 0.020, 0.010), matClamp, 0, -0.015, 0);
+    addMesh(g, new THREE.BoxGeometry(0.004, 0.030, 0.010), matClamp, -0.011, -0.020, 0);
+    addMesh(g, new THREE.BoxGeometry(0.004, 0.030, 0.010), matClamp, 0.011, -0.020, 0);
+    addMesh(g, new THREE.CylinderGeometry(wheelR, wheelR, wheelW, 32), matWheelRubber, 0, wheelCY, 0, { rz: Math.PI/2 });
+    addMesh(g, new THREE.CylinderGeometry(wheelR*0.4, wheelR*0.4, wheelW+0.002, 16), matRod, 0, wheelCY, 0, { rz: Math.PI/2 });
+    addMesh(g, new THREE.CylinderGeometry(0.003, 0.003, wheelW+0.014, 12), matRod, 0, wheelCY, 0, { rz: Math.PI/2 });
+    g.position.set(px, bracketBaseY, pz);
+    bracketGroup.add(g);
+}
+[[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
+    makeSupportWheel(sx*(L/2-P/2), sz*(W/2-P/2));
+});
+
+rootGroup.add(bracketGroup);
+scene.add(rootGroup);
+
+/* ========== Labels ========== */
+function makeLabel(text, px, py, pz, color) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 512; canvas.height = 96;
+    ctx.clearRect(0, 0, 512, 96);
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    ctx.strokeStyle = '#ccc'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(4, 4, 504, 88, 14); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = color || '#555';
+    ctx.font = 'bold 38px Microsoft YaHei, PingFang SC, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, 256, 50);
+    const tex = new THREE.CanvasTexture(canvas); tex.minFilter = THREE.LinearFilter;
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+    sp.position.set(px, py, pz); sp.scale.set(0.14, 0.028, 1);
+    return sp;
+}
+
+rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
+rootGroup.add(makeLabel('爬行轨道', pipeR + 0.15, 0.3, 0.30, '#7f8c8d'));
+rootGroup.add(makeLabel('轨道爬车', 0.18, carCenterY + carBodyH + 0.04, 0, '#c0392b'));
+rootGroup.add(makeLabel('剥离支架', 0, beamY + 0.04, 0.12, '#2980b9'));
+rootGroup.add(makeLabel('安装板', 0.15, plateY + 0.02, 0.10, '#8e44ad'));
+
+/* ========== Ground ========== */
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(6, 6),
+    new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.95, metalness: 0 })
+);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = -pipeR - 0.05;
+ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(5, 50, 0xe0e0e0, 0xeeeeee);
+grid.position.y = -pipeR - 0.049;
+scene.add(grid);
+
+/* ========== Environment ========== */
+const pmrem = new THREE.PMREMGenerator(renderer);
+const es = new THREE.Scene(); es.background = new THREE.Color(0xffffff);
+es.add(new THREE.AmbientLight(0xffffff, 0.6));
+const el2 = new THREE.DirectionalLight(0xffffff, 0.8); el2.position.set(1, 1, 1); es.add(el2);
+scene.environment = pmrem.fromScene(es).texture; pmrem.dispose();
+
+/* ========== Selection ========== */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let selectedGroup = null, boxHelper = null;
+const selBar = document.getElementById('sel-bar');
+const selNameText = document.getElementById('sel-name-text');
+
+function findSelectableParent(obj) {
+    let c = obj;
+    while (c) {
+        if (c.userData.partName && (c.parent === rootGroup || c.parent === bracketGroup || c.parent === pipeGroup || c.parent === trackGroup || c.parent === carGroup)) return c;
+        c = c.parent;
+    }
+    return null;
+}
+function clearSelection() {
+    if (boxHelper) { scene.remove(boxHelper); boxHelper.dispose(); boxHelper = null; }
+    selectedGroup = null; selBar.style.display = 'none';
+}
+function selectGroup(g) {
+    clearSelection(); selectedGroup = g;
+    boxHelper = new THREE.BoxHelper(g, 0xe74c3c); scene.add(boxHelper);
+    selNameText.textContent = g.userData.partName || '未命名'; selBar.style.display = 'block';
+}
+
+let cs = { x: 0, y: 0, t: 0 };
+renderer.domElement.addEventListener('pointerdown', e => { cs = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+renderer.domElement.addEventListener('pointerup', e => {
+    if (Math.hypot(e.clientX - cs.x, e.clientY - cs.y) > 5 || performance.now() - cs.t > 300) return;
+    mouse.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+    raycaster.setFromCamera(mouse, camera);
+    const hits = raycaster.intersectObjects(rootGroup.children, true);
+    if (hits.length > 0) { const g = findSelectableParent(hits[0].object); if (g) { selectGroup(g); return; } }
+    clearSelection();
+});
+addEventListener('keydown', e => { if (e.key === 'Escape') clearSelection(); });
+
+/* ========== Info Panel Toggle ========== */
+const infoToggle = document.getElementById('info-toggle');
+const infoPanel = document.getElementById('info-panel');
+infoToggle.addEventListener('click', () => {
+    const open = infoPanel.classList.toggle('show');
+    infoToggle.classList.toggle('open', open);
+});
+
+/* ========== Toggle Visibility ========== */
+function setupToggle(id, group) {
+    const btn = document.getElementById(id);
+    btn.addEventListener('click', () => {
+        group.visible = !group.visible;
+        btn.classList.toggle('active', group.visible);
+    });
+}
+setupToggle('btn-pipe', pipeGroup);
+setupToggle('btn-track', trackGroup);
+setupToggle('btn-car', carGroup);
+setupToggle('btn-bracket', bracketGroup);
+
+/* ========== Standard Views ========== */
+const viewTarget = new THREE.Vector3(0, 0.45, 0);
+const viewDist = 2.5;
+
+function animateCamera(pos) {
+    const start = camera.position.clone();
+    const end = new THREE.Vector3(...pos);
+    const dur = 400, t0 = performance.now();
+    function tick() {
+        const t = Math.min((performance.now() - t0) / dur, 1);
+        const ease = t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;
+        camera.position.lerpVectors(start, end, ease);
+        controls.target.copy(viewTarget); controls.update();
+        if (t < 1) requestAnimationFrame(tick);
+    }
+    tick();
+}
+document.getElementById('btn-front').addEventListener('click', () => animateCamera([0, viewTarget.y, viewDist]));
+document.getElementById('btn-left').addEventListener('click', () => animateCamera([-viewDist, viewTarget.y, 0]));
+document.getElementById('btn-top').addEventListener('click', () => animateCamera([0, viewTarget.y + viewDist, 0.001]));
+
+/* ========== Render Loop ========== */
+(function loop() {
+    requestAnimationFrame(loop);
+    controls.update();
+    if (boxHelper && selectedGroup) boxHelper.update();
+    renderer.render(scene, camera);
+})();
+
+addEventListener('resize', () => {
+    camera.aspect = innerWidth / innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(innerWidth, innerHeight);
+});
+</script>
+</body>
+</html>
