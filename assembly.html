@@ -234,68 +234,61 @@ trackPositions.forEach(zPos => {
 rootGroup.add(trackGroup);
 
 /* ========== 3. Crawler Car (~300x300mm, circumferential travel) ========== */
-const carR = pipeR + trackH;
-const carCenterY = carR;
-const wheelR = 0.022, wheelW2 = 0.030;
-
+const trackTopY = pipeR + trackH;
+const whlR = 0.020;
+const carBottomY = trackTopY;
 const carBodyW = 0.30, carBodyH = 0.10, carBodyD = 0.30;
-addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
-    matCarBody, 0, carCenterY + carBodyH/2, 0, { castShadow: true });
+const carTopY = carBottomY + carBodyH;
 
+addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
+    matCarBody, 0, carBottomY + carBodyH/2, 0, { castShadow: true });
 addMesh(carGroup, new THREE.BoxGeometry(carBodyW + 0.02, 0.005, carBodyD + 0.02),
-    matCarPlate, 0, carCenterY + carBodyH, 0, { castShadow: true });
+    matCarPlate, 0, carTopY, 0, { castShadow: true });
 addMesh(carGroup, new THREE.BoxGeometry(carBodyW + 0.02, 0.005, carBodyD + 0.02),
-    matCarPlate, 0, carCenterY, 0);
+    matCarPlate, 0, carBottomY, 0);
 
 trackPositions.forEach(tz => {
     [-1, 1].forEach(sx => {
-        addMesh(carGroup, new THREE.CylinderGeometry(wheelR, wheelR, wheelW2, 24),
-            matCarPlate, sx * 0.08, carCenterY - wheelR * 0.3, tz,
-            { rx: Math.PI/2, castShadow: true });
-        addMesh(carGroup, new THREE.CylinderGeometry(wheelR * 0.35, wheelR * 0.35, wheelW2 + 0.006, 12),
-            matBolt, sx * 0.08, carCenterY - wheelR * 0.3, tz,
-            { rx: Math.PI/2 });
-        addMesh(carGroup, new THREE.CylinderGeometry(0.003, 0.003, wheelW2 + 0.020, 8),
-            matRod, sx * 0.08, carCenterY - wheelR * 0.3, tz,
-            { rx: Math.PI/2 });
-
-        addMesh(carGroup, new THREE.BoxGeometry(0.010, 0.03, 0.008), matCarBody,
-            sx * 0.08, carCenterY - 0.005, tz - (wheelW2/2 + 0.006));
-        addMesh(carGroup, new THREE.BoxGeometry(0.010, 0.03, 0.008), matCarBody,
-            sx * 0.08, carCenterY - 0.005, tz + (wheelW2/2 + 0.006));
+        const wY = trackTopY + whlR;
+        addMesh(carGroup, new THREE.CylinderGeometry(whlR, whlR, 0.028, 24),
+            matCarPlate, sx * 0.09, wY, tz, { rx: Math.PI/2, castShadow: true });
+        addMesh(carGroup, new THREE.CylinderGeometry(whlR * 0.35, whlR * 0.35, 0.032, 12),
+            matBolt, sx * 0.09, wY, tz, { rx: Math.PI/2 });
+        addMesh(carGroup, new THREE.CylinderGeometry(0.003, 0.003, 0.044, 8),
+            matRod, sx * 0.09, wY, tz, { rx: Math.PI/2 });
+        addMesh(carGroup, new THREE.BoxGeometry(0.012, wY - carBottomY + 0.01, 0.008), matCarBody,
+            sx * 0.09, (carBottomY + wY)/2, tz - 0.024);
+        addMesh(carGroup, new THREE.BoxGeometry(0.012, wY - carBottomY + 0.01, 0.008), matCarBody,
+            sx * 0.09, (carBottomY + wY)/2, tz + 0.024);
     });
 });
 
-[-1, 1].forEach(sx => {
-    addMesh(carGroup, new THREE.BoxGeometry(0.020, carBodyH * 0.5, carBodyD - 0.04),
-        matCarBody, sx * (carBodyW/2 - 0.012), carCenterY + carBodyH * 0.8, 0, { castShadow: true });
-});
+addMesh(carGroup, new THREE.BoxGeometry(0.06, 0.035, 0.08),
+    matCarPlate, 0, carTopY + 0.02, 0, { castShadow: true });
 
-addMesh(carGroup, new THREE.BoxGeometry(0.06, 0.04, 0.08),
-    matCarPlate, 0, carCenterY + carBodyH + 0.025, 0, { castShadow: true });
-
-const sidePlateH = 0.32, sidePlateD = 0.30, sidePlateT = 0.008;
+const sidePlateH = 0.36, sidePlateD = 0.32, sidePlateT = 0.008;
 const sidePlateX = carBodyW / 2 + sidePlateT / 2;
-const sidePlateY = carCenterY + carBodyH / 2;
+const sidePlateY = carBottomY + carBodyH / 2;
 addMesh(carGroup, new THREE.BoxGeometry(sidePlateT, sidePlateH, sidePlateD),
     matCarPlate, sidePlateX, sidePlateY, 0, { castShadow: true });
 
-[[-0.10,-0.10],[0.10,-0.10],[-0.10,0.10],[0.10,0.10],[0,0]].forEach(([by,bz]) => {
+[[-0.12,-0.10],[0.12,-0.10],[-0.12,0.10],[0.12,0.10],[0,0],[-0.12,0],[0.12,0]].forEach(([by,bz]) => {
     addMesh(carGroup, new THREE.CylinderGeometry(0.004, 0.004, sidePlateT + 0.01, 8),
         matBolt, sidePlateX, sidePlateY + by, bz, { rz: Math.PI/2 });
 });
-
-addMesh(carGroup, new THREE.BoxGeometry(0.004, 0.06, carBodyD),
-    matCarPlate, sidePlateX + 0.003, sidePlateY + sidePlateH/2 - 0.03, 0);
-addMesh(carGroup, new THREE.BoxGeometry(0.004, 0.06, carBodyD),
-    matCarPlate, sidePlateX + 0.003, sidePlateY - sidePlateH/2 + 0.03, 0);
+addMesh(carGroup, new THREE.BoxGeometry(0.005, 0.06, sidePlateD),
+    matCarPlate, sidePlateX + 0.004, sidePlateY + sidePlateH/2 - 0.035, 0);
+addMesh(carGroup, new THREE.BoxGeometry(0.005, 0.06, sidePlateD),
+    matCarPlate, sidePlateX + 0.004, sidePlateY - sidePlateH/2 + 0.035, 0);
+addMesh(carGroup, new THREE.BoxGeometry(0.005, sidePlateH, 0.06),
+    matCarPlate, sidePlateX + 0.004, sidePlateY, sidePlateD/2 - 0.035);
+addMesh(carGroup, new THREE.BoxGeometry(0.005, sidePlateH, 0.06),
+    matCarPlate, sidePlateX + 0.004, sidePlateY, -sidePlateD/2 + 0.035);
 
 rootGroup.add(carGroup);
 
-/* ========== 4. Peeling Bracket (on side plate, parallel to pipe) ========== */
+/* ========== 4. Peeling Bracket (on side, parallel to pipe, local coords) ========== */
 const P = 0.03, L = 0.6, W = 0.12, H = 0.30;
-const bracketBaseY = sidePlateY - H / 2 - P / 2;
-const bracketBaseX = sidePlateX + sidePlateT / 2;
 
 function make3030(len, axis) {
     const g = new THREE.Group();
@@ -316,7 +309,7 @@ function make3030(len, axis) {
 
 function placeProfile(len, axis, x, y, z, name) {
     const p = make3030(len, axis);
-    p.position.set(bracketBaseX + x, bracketBaseY + y, z);
+    p.position.set(x, y, z);
     p.userData.partName = name || '3030铝型材';
     bracketGroup.add(p);
     return p;
@@ -332,45 +325,31 @@ placeProfile(W - 2*P, 'z',  0.025, P/2, 0, '推杆支撑型材(右)');
 {
     const act = new THREE.Group();
     act.userData.partName = '电动推杆';
-    const mz = 0.035, plateTop = 0.007;
+    const mz = 0.035, plateTop2 = 0.007;
     addMesh(act, new THREE.BoxGeometry(0.06, 0.007, 0.08), matAluminum, 0, 0.0035, mz/2, { castShadow: true });
-    [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
-        addMesh(act, new THREE.CylinderGeometry(0.003, 0.003, 0.01, 8), matBolt, sx*0.024, 0.003, sz*0.032 + mz/2);
-    });
-    const motorH = 0.032, motorCy = plateTop + motorH/2, motorZLen = 0.077;
+    const motorH = 0.032, motorCy = plateTop2 + motorH/2, motorZLen = 0.077;
     const motorCz = mz + 0.024 - motorZLen/2;
     addMesh(act, new THREE.BoxGeometry(0.048, motorH, 0.067), matActCap, 0, motorCy, motorCz, { castShadow: true });
-    addMesh(act, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2, castShadow: true });
-    addMesh(act, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz + motorZLen/2 + 0.002, { rx: Math.PI/2 });
-    addMesh(act, new THREE.CylinderGeometry(0.020, 0.020, 0.004, 20), matActCap, 0, motorCy, motorCz - motorZLen/2 - 0.002, { rx: Math.PI/2 });
-    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, 0.012, 12), matRod, 0, motorCy, motorCz + motorZLen/2 + 0.006, { rx: Math.PI/2 });
-    const motorTop = plateTop + motorH, elbowH = 0.014;
-    addMesh(act, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, motorTop + elbowH/2, motorCz*0.4, { castShadow: true });
-    const bodyBot = motorTop + elbowH, bodyH = 0.13, bodyTop2 = bodyBot + bodyH;
-    addMesh(act, new THREE.BoxGeometry(0.036, bodyH, 0.036), matActBody, 0, bodyBot + bodyH/2, 0, { castShadow: true });
-    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyBot + 0.005, 0, { castShadow: true });
-    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyTop2 - 0.005, 0, { castShadow: true });
-    addMesh(act, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyBot + bodyH/2 - 0.025, 0);
-    addMesh(act, new THREE.BoxGeometry(0.040, 0.003, 0.040), matBolt, 0, bodyBot + bodyH/2 + 0.025, 0);
-    const rodTopLocal = (H + P + P/2) - P/2 - P;
-    const rodLen = rodTopLocal - bodyTop2 - 0.006;
-    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, bodyTop2 + rodLen/2, 0, { castShadow: true });
-    addMesh(act, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopLocal, 0);
-    addMesh(act, new THREE.CylinderGeometry(0.003, 0.003, 0.025, 8), matBolt, 0, rodTopLocal, 0, { rx: Math.PI/2 });
-    addMesh(act, new THREE.BoxGeometry(0.008, 0.006, 0.006), matActCap, 0.026, motorCy, motorCz + motorZLen/2 + 0.004);
-    addMesh(act, new THREE.CylinderGeometry(0.002, 0.002, 0.025, 6), matCable, 0.042, motorCy, motorCz + motorZLen/2 + 0.004, { rz: Math.PI/2 });
-    act.position.set(bracketBaseX, bracketBaseY + P, 0);
+    addMesh(act, new THREE.CylinderGeometry(0.018, 0.018, motorZLen, 20), matActBody, 0, motorCy, motorCz, { rx: Math.PI/2 });
+    const motorTop = plateTop2 + motorH, elbowH = 0.014;
+    addMesh(act, new THREE.BoxGeometry(0.042, elbowH, 0.062), matActCap, 0, motorTop + elbowH/2, motorCz*0.4);
+    const bodyBot = motorTop + elbowH, bodyH2 = 0.13, bodyTop2 = bodyBot + bodyH2;
+    addMesh(act, new THREE.BoxGeometry(0.036, bodyH2, 0.036), matActBody, 0, bodyBot + bodyH2/2, 0, { castShadow: true });
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyBot + 0.005, 0);
+    addMesh(act, new THREE.BoxGeometry(0.038, 0.010, 0.038), matActCap, 0, bodyTop2 - 0.005, 0);
+    const rodTopL = (H + P + P/2) - P/2 - P;
+    const rodLen = rodTopL - bodyTop2 - 0.006;
+    addMesh(act, new THREE.CylinderGeometry(0.006, 0.006, rodLen, 16), matRod, 0, bodyTop2 + rodLen/2, 0);
+    addMesh(act, new THREE.CylinderGeometry(0.010, 0.010, 0.012, 16), matRod, 0, rodTopL, 0);
+    act.position.set(0, P, 0);
     bracketGroup.add(act);
 }
 
 const BL = 0.50, beamThick = 0.010;
-const beamY = bracketBaseY + H + P + beamThick/2;
+const localBeamY = H + P + beamThick/2;
 const beamShape = new THREE.Shape();
-beamShape.moveTo(-BL/2, -P/2);
-beamShape.lineTo(BL/2, -P/2);
-beamShape.lineTo(BL/2, P/2);
-beamShape.lineTo(-BL/2, P/2);
-beamShape.closePath();
+beamShape.moveTo(-BL/2, -P/2); beamShape.lineTo(BL/2, -P/2);
+beamShape.lineTo(BL/2, P/2); beamShape.lineTo(-BL/2, P/2); beamShape.closePath();
 for (let hx = 0; hx <= BL/2 - 0.008; hx += 0.020) {
     const h1 = new THREE.Path(); h1.absarc(hx, 0, 0.003, 0, Math.PI*2, false); beamShape.holes.push(h1);
     if (hx > 0) { const h2 = new THREE.Path(); h2.absarc(-hx, 0, 0.003, 0, Math.PI*2, false); beamShape.holes.push(h2); }
@@ -379,39 +358,30 @@ const beamGeo = new THREE.ExtrudeGeometry(beamShape, { depth: beamThick, bevelEn
 beamGeo.translate(0, 0, -beamThick/2);
 const topBeam = new THREE.Mesh(beamGeo, matAluminum);
 topBeam.rotation.x = -Math.PI/2;
-topBeam.position.set(bracketBaseX, beamY, 0);
+topBeam.position.set(0, localBeamY, 0);
 topBeam.castShadow = true;
 topBeam.userData.partName = '顶部横梁 500mm';
 bracketGroup.add(topBeam);
 
-const peelSpacing = 0.12, peelTopY = beamY - beamThick/2;
+const peelSpacing = 0.12, localPeelTopY = localBeamY - beamThick/2;
 
 function makePeelLineAssembly(sign) {
     const g = new THREE.Group();
     g.userData.partName = '剥离线+传感器+夹具';
-    const x = bracketBaseX + sign * peelSpacing;
-    const clampCy = peelTopY - 0.24, sensorCy = clampCy + 0.022;
+    const x = sign * peelSpacing;
+    const clampCy = localPeelTopY - 0.24, sensorCy = clampCy + 0.022;
     const tapeTopY2 = clampCy - 0.018, tapeLen = 0.15;
-
-    const pts = [new THREE.Vector3(x, peelTopY, 0), new THREE.Vector3(x, sensorCy + 0.013, 0)];
+    const pts = [new THREE.Vector3(x, localPeelTopY, 0), new THREE.Vector3(x, sensorCy + 0.013, 0)];
     addMesh(g, new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts), 8, 0.0018, 8, false), matWire, 0, 0, 0);
-    addMesh(g, new THREE.SphereGeometry(0.004, 10, 10), matBolt, x, peelTopY, 0);
-
+    addMesh(g, new THREE.SphereGeometry(0.004, 10, 10), matBolt, x, localPeelTopY, 0);
     const sens = addMesh(g, new THREE.SphereGeometry(0.015, 24, 16), matSensor, x, sensorCy, 0, { castShadow: true });
     sens.scale.set(1, 0.5, 0.7);
-    addMesh(g, new THREE.CylinderGeometry(0.004, 0.004, 0.006, 12), matBolt, x, sensorCy + 0.010, 0);
-    addMesh(g, new THREE.CylinderGeometry(0.004, 0.004, 0.006, 12), matBolt, x, sensorCy - 0.010, 0);
-
     const cg = new THREE.Group();
     addMesh(cg, new THREE.BoxGeometry(0.020, 0.008, 0.014), matClamp, 0, 0, 0);
     addMesh(cg, new THREE.BoxGeometry(0.004, 0.016, 0.014), matClampJaw, -0.009, -0.004, 0);
     addMesh(cg, new THREE.BoxGeometry(0.004, 0.016, 0.014), matClampJaw, 0.009, -0.004, 0);
-    const knobR = 0.01;
-    addMesh(cg, new THREE.CylinderGeometry(knobR, knobR, 0.008, 24), matKnob, 0, 0, 0.014, { rx: Math.PI/2 });
-    cg.rotation.y = -Math.PI/2;
-    cg.position.set(x, clampCy, 0);
-    g.add(cg);
-
+    addMesh(cg, new THREE.CylinderGeometry(0.01, 0.01, 0.008, 24), matKnob, 0, 0, 0.014, { rx: Math.PI/2 });
+    cg.rotation.y = -Math.PI/2; cg.position.set(x, clampCy, 0); g.add(cg);
     addMesh(g, new THREE.BoxGeometry(0.02, tapeLen, 0.001), matTape, x, tapeTopY2 - tapeLen/2, 0);
     bracketGroup.add(g);
 }
@@ -422,23 +392,21 @@ const WH = 0.062;
 function makeSupportWheel(px, pz) {
     const g = new THREE.Group();
     g.userData.partName = '支撑轮';
-    const wheelR = 0.018, wheelW = 0.014;
-    const wheelCY = -(WH - wheelR);
-    addMesh(g, new THREE.BoxGeometry(0.032, 0.005, 0.032), matPlate, 0, -0.0025, 0, { castShadow: true });
-    addMesh(g, new THREE.BoxGeometry(0.022, 0.020, 0.010), matClamp, 0, -0.015, 0);
+    const swR = 0.018, swW = 0.014, swCY = -(WH - swR);
+    addMesh(g, new THREE.BoxGeometry(0.032, 0.005, 0.032), matPlate, 0, -0.0025, 0);
     addMesh(g, new THREE.BoxGeometry(0.004, 0.030, 0.010), matClamp, -0.011, -0.020, 0);
     addMesh(g, new THREE.BoxGeometry(0.004, 0.030, 0.010), matClamp, 0.011, -0.020, 0);
-    addMesh(g, new THREE.CylinderGeometry(wheelR, wheelR, wheelW, 32), matWheelRubber, 0, wheelCY, 0, { rz: Math.PI/2 });
-    addMesh(g, new THREE.CylinderGeometry(wheelR*0.4, wheelR*0.4, wheelW+0.002, 16), matRod, 0, wheelCY, 0, { rz: Math.PI/2 });
-    addMesh(g, new THREE.CylinderGeometry(0.003, 0.003, wheelW+0.014, 12), matRod, 0, wheelCY, 0, { rz: Math.PI/2 });
-    g.position.set(bracketBaseX + px, bracketBaseY, pz);
+    addMesh(g, new THREE.CylinderGeometry(swR, swR, swW, 32), matWheelRubber, 0, swCY, 0, { rz: Math.PI/2 });
+    addMesh(g, new THREE.CylinderGeometry(0.003, 0.003, swW + 0.014, 12), matRod, 0, swCY, 0, { rz: Math.PI/2 });
+    g.position.set(px, 0, pz);
     bracketGroup.add(g);
 }
 [[-1,-1],[1,-1],[-1,1],[1,1]].forEach(([sx,sz]) => {
     makeSupportWheel(sx*(L/2-P/2), sz*(W/2-P/2));
 });
 
-bracketGroup.rotation.y = Math.PI / 2;
+bracketGroup.rotation.y = -Math.PI / 2;
+bracketGroup.position.set(sidePlateX + sidePlateT/2 + W/2, sidePlateY, 0);
 
 rootGroup.add(bracketGroup);
 scene.add(rootGroup);
@@ -464,9 +432,9 @@ function makeLabel(text, px, py, pz, color) {
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道 ×2', pipeR + 0.15, 0.3, 0.25, '#7f8c8d'));
-rootGroup.add(makeLabel('轨道爬车', -0.20, carCenterY + carBodyH + 0.06, 0, '#c0392b'));
-rootGroup.add(makeLabel('剥离支架', 0.10, beamY + 0.04, L/2 + 0.08, '#2980b9'));
-rootGroup.add(makeLabel('侧面安装板', sidePlateX + 0.08, sidePlateY, 0.18, '#8e44ad'));
+rootGroup.add(makeLabel('轨道爬车', -0.20, carTopY + 0.06, 0, '#c0392b'));
+rootGroup.add(makeLabel('剥离支架', sidePlateX + W/2 + 0.10, sidePlateY + H/2 + 0.05, 0, '#2980b9'));
+rootGroup.add(makeLabel('侧面安装板', sidePlateX + 0.06, sidePlateY, 0.20, '#8e44ad'));
 
 /* ========== Ground ========== */
 const ground = new THREE.Mesh(
