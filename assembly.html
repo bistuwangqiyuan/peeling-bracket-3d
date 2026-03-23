@@ -49,7 +49,8 @@ canvas{display:block}
     <div class="info-row"><span class="lbl">轨道间距</span><span class="val">500 mm</span></div>
     <div class="section-title">轨道爬车</div>
     <div class="info-row"><span class="lbl">驱动方式</span><span class="val">齿轮啮合</span></div>
-    <div class="info-row"><span class="lbl">侧面安装板</span><span class="val">320×300 mm</span></div>
+    <div class="info-row"><span class="lbl">爬车尺寸</span><span class="val">350×250×200 mm</span></div>
+    <div class="info-row"><span class="lbl">右侧安装板</span><span class="val">380×340 mm</span></div>
     <div class="section-title">剥离支架</div>
     <div class="info-row"><span class="lbl">底座</span><span class="val">600×120 mm</span></div>
     <div class="info-row"><span class="lbl">横梁</span><span class="val">500×30×10 mm</span></div>
@@ -77,7 +78,8 @@ canvas{display:block}
 </div>
 
 <div id="doc-links">
-    <a href="index.html">单体支架</a>
+    <a href="index.html">双推杆支架</a>
+    <a href="bracket-single.html">单推杆支架</a>
     <a href="drawings.html">2D附图</a>
     <a href="patent.html">专利文档</a>
     <a href="peeling-bracket.stl" download style="border-color:#27ae60;color:#27ae60;font-weight:600" onmouseover="this.style.background='#27ae60';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,0.94)';this.style.color='#27ae60'">⬇ STL下载</a>
@@ -233,11 +235,11 @@ trackPositions.forEach(zPos => {
 });
 rootGroup.add(trackGroup);
 
-/* ========== 3. Crawler Car (~300x300mm, circumferential travel) ========== */
+/* ========== 3. Crawler Car (350×250×200mm, circumferential travel) ========== */
 const trackTopY = pipeR + trackH;
 const whlR = 0.020;
 const carBottomY = trackTopY;
-const carBodyW = 0.30, carBodyH = 0.10, carBodyD = 0.30;
+const carBodyD = 0.35, carBodyW = 0.25, carBodyH = 0.20;
 const carTopY = carBottomY + carBodyH;
 
 addMesh(carGroup, new THREE.BoxGeometry(carBodyW, carBodyH, carBodyD),
@@ -251,28 +253,28 @@ trackPositions.forEach(tz => {
     [-1, 1].forEach(sx => {
         const wY = trackTopY + whlR;
         addMesh(carGroup, new THREE.CylinderGeometry(whlR, whlR, 0.028, 24),
-            matCarPlate, sx * 0.09, wY, tz, { rx: Math.PI/2, castShadow: true });
+            matCarPlate, sx * 0.07, wY, tz, { rx: Math.PI/2, castShadow: true });
         addMesh(carGroup, new THREE.CylinderGeometry(whlR * 0.35, whlR * 0.35, 0.032, 12),
-            matBolt, sx * 0.09, wY, tz, { rx: Math.PI/2 });
+            matBolt, sx * 0.07, wY, tz, { rx: Math.PI/2 });
         addMesh(carGroup, new THREE.CylinderGeometry(0.003, 0.003, 0.044, 8),
-            matRod, sx * 0.09, wY, tz, { rx: Math.PI/2 });
+            matRod, sx * 0.07, wY, tz, { rx: Math.PI/2 });
         addMesh(carGroup, new THREE.BoxGeometry(0.012, wY - carBottomY + 0.01, 0.008), matCarBody,
-            sx * 0.09, (carBottomY + wY)/2, tz - 0.024);
+            sx * 0.07, (carBottomY + wY)/2, tz - 0.020);
         addMesh(carGroup, new THREE.BoxGeometry(0.012, wY - carBottomY + 0.01, 0.008), matCarBody,
-            sx * 0.09, (carBottomY + wY)/2, tz + 0.024);
+            sx * 0.07, (carBottomY + wY)/2, tz + 0.020);
     });
 });
 
-addMesh(carGroup, new THREE.BoxGeometry(0.06, 0.035, 0.08),
-    matCarPlate, 0, carTopY + 0.02, 0, { castShadow: true });
+addMesh(carGroup, new THREE.BoxGeometry(0.08, 0.04, 0.10),
+    matCarPlate, 0, carTopY + 0.022, 0, { castShadow: true });
 
-const sidePlateH = 0.36, sidePlateD = 0.32, sidePlateT = 0.008;
+const sidePlateH = 0.38, sidePlateD = 0.34, sidePlateT = 0.008;
 const sidePlateX = carBodyW / 2 + sidePlateT / 2;
 const sidePlateY = carBottomY + carBodyH / 2;
 addMesh(carGroup, new THREE.BoxGeometry(sidePlateT, sidePlateH, sidePlateD),
     matCarPlate, sidePlateX, sidePlateY, 0, { castShadow: true });
 
-[[-0.12,-0.10],[0.12,-0.10],[-0.12,0.10],[0.12,0.10],[0,0],[-0.12,0],[0.12,0]].forEach(([by,bz]) => {
+[[-0.14,-0.12],[0.14,-0.12],[-0.14,0.12],[0.14,0.12],[0,0],[-0.14,0],[0.14,0]].forEach(([by,bz]) => {
     addMesh(carGroup, new THREE.CylinderGeometry(0.004, 0.004, sidePlateT + 0.01, 8),
         matBolt, sidePlateX, sidePlateY + by, bz, { rz: Math.PI/2 });
 });
@@ -431,7 +433,7 @@ function makeLabel(text, px, py, pz, color) {
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道 ×2', pipeR + 0.15, 0.3, 0.25, '#7f8c8d'));
-rootGroup.add(makeLabel('轨道爬车', -0.20, carTopY + 0.06, 0, '#c0392b'));
+rootGroup.add(makeLabel('轨道爬车 350×250×200', -0.22, carTopY + 0.06, 0, '#c0392b'));
 rootGroup.add(makeLabel('剥离支架', sidePlateX + L/2 + 0.08, sidePlateY + 0.06, 0, '#2980b9'));
 rootGroup.add(makeLabel('侧面安装板', sidePlateX + 0.06, sidePlateY, 0.20, '#8e44ad'));
 
