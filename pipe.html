@@ -85,7 +85,7 @@ canvas{display:block}
     <a href="patent.html">专利文档</a>
 </div>
 
-<div id="hint">左键旋转 | 右键平移 | 滚轮缩放 | 点击选中组件</div>
+<div id="hint">左键旋转 | 右键平移 | 滚轮缩放 | 方向键旋转 | 点击选中</div>
 
 <script type="importmap">
 { "imports": { "three": "https://esm.sh/three@0.160.0", "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/" } }
@@ -363,9 +363,13 @@ document.getElementById('btn-front').addEventListener('click', () => animateCame
 document.getElementById('btn-left').addEventListener('click', () => animateCamera([-viewDist, viewTarget.y, 0]));
 document.getElementById('btn-top').addEventListener('click', () => animateCamera([0, viewTarget.y + viewDist, 0.001]));
 
+/* ========== Keyboard Rotation ========== */
+const _keys={};addEventListener('keydown',e=>{if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();_keys[e.key]=true;}});addEventListener('keyup',e=>{_keys[e.key]=false;});
+
 /* ========== Render Loop ========== */
 (function loop() {
     requestAnimationFrame(loop);
+    const s=0.02;if(_keys.ArrowLeft)controls.rotateLeft(s);if(_keys.ArrowRight)controls.rotateLeft(-s);if(_keys.ArrowUp)controls.rotateUp(s);if(_keys.ArrowDown)controls.rotateUp(-s);
     controls.update();
     if (boxHelper && selectedGroup) boxHelper.update();
     renderer.render(scene, camera);
