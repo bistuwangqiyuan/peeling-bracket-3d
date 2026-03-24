@@ -540,7 +540,7 @@ const carBox = new THREE.Group();
 carBox.userData.partName = '爬车驱动盒';
 const cbW = 0.25, cbD = 0.35, cbH = 0.20;
 const cbX = -L/2 - cbW/2;
-const cbY = P + H/2 - cbH/2;
+const cbY = 0;
 
 addMesh(carBox, new THREE.BoxGeometry(cbW, cbH, cbD), matCarBody, cbX, cbY + cbH/2, 0, { castShadow: true });
 
