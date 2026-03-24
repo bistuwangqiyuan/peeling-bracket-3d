@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>装配管道组合 — 管道+轨道+支架爬车</title>
+<title>管道组合+正式爬车 — 管道+轨道+支架+STEP爬车</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{background:#fff;overflow:hidden;font-family:'Microsoft YaHei','PingFang SC',sans-serif}
@@ -38,7 +38,7 @@ canvas{display:block}
 
 <button id="info-toggle" title="参数与图例">···</button>
 <div id="info-panel">
-    <h2>装配管道组合</h2>
+    <h2>管道组合+正式爬车</h2>
     <div class="section-title">管道参数</div>
     <div class="info-row"><span class="lbl">管道直径</span><span class="val">DN1200 (1219mm)</span></div>
     <div class="info-row"><span class="lbl">壁厚</span><span class="val">12 mm</span></div>
@@ -47,11 +47,10 @@ canvas{display:block}
     <div class="info-row"><span class="lbl">轨道</span><span class="val">2道 × 200mm板型</span></div>
     <div class="info-row"><span class="lbl">间距</span><span class="val">700 mm</span></div>
     <div class="info-row"><span class="lbl">圆环</span><span class="val">D1280×2mm×W200</span></div>
-    <div class="section-title">支架+爬车盒</div>
+    <div class="section-title">支架+正式爬车</div>
     <div class="info-row"><span class="lbl">支架</span><span class="val">600×120×300 mm</span></div>
     <div class="info-row"><span class="lbl">推杆</span><span class="val">单推杆(L型)</span></div>
-    <div class="info-row"><span class="lbl">爬车盒</span><span class="val">250×350×200 mm</span></div>
-    <div class="info-row"><span class="lbl">安装间距</span><span class="val">管壁上方 20mm</span></div>
+    <div class="info-row"><span class="lbl">爬车</span><span class="val">STEP模型 (SolidWorks)</span></div>
 </div>
 
 <div id="sel-bar">
@@ -72,16 +71,21 @@ canvas{display:block}
 </div>
 
 <div id="doc-links">
-    <a href="pipe.html">单管道</a>
-    <a href="bracket-carbox.html">带爬车盒</a>
-    <a href="assembly-realcrawler.html">正式爬车组合</a>
+    <a href="assembly.html">管道组合</a>
     <a href="bracket-realcrawler.html">正式爬车</a>
+    <a href="pipe.html">单管道</a>
     <a href="index.html">双推杆支架</a>
     <a href="patent.html">专利文档</a>
 </div>
 
+<div id="loading-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:100;font-family:inherit">
+    <div style="width:40px;height:40px;border:3px solid #e0e0e0;border-top:3px solid #4a90d9;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+    <div id="loading-text" style="margin-top:16px;font-size:14px;color:#666">正在加载爬车模型...</div>
+</div>
+<style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>
 <div id="hint">左键旋转 | 右键平移 | 滚轮缩放 | 点击选中组件</div>
 
+<script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.22/dist/occt-import-js.js"></script>
 <script type="importmap">
 { "imports": { "three": "https://esm.sh/three@0.160.0", "three/addons/": "https://esm.sh/three@0.160.0/examples/jsm/" } }
 </script>
@@ -358,25 +362,82 @@ function makeSupportWheel(px, pz) {
     makeSupportWheel(sx*(L/2-P/2), sz*(W/2-P/2));
 });
 
-/* Car Drive Box */
-const cbW = 0.25, cbD = 0.35, cbH = 0.20;
-const cbX = -L/2 - cbW/2, cbY = -0.025;
-const carBox = new THREE.Group(); carBox.userData.partName = '爬车驱动盒';
-addMesh(carBox, new THREE.BoxGeometry(cbW, cbH, cbD), matCarBody, cbX, cbY + cbH/2, 0, { castShadow: true });
-addMesh(carBox, new THREE.BoxGeometry(cbW + 0.01, 0.004, cbD + 0.01), matCarPlate, cbX, cbY + cbH, 0);
-addMesh(carBox, new THREE.BoxGeometry(cbW + 0.01, 0.004, cbD + 0.01), matCarPlate, cbX, cbY, 0);
-const cpT = 0.006;
-addMesh(carBox, new THREE.BoxGeometry(cpT, cbH*0.9, cbD*0.9), matCarPlate, cbX + cbW/2 + cpT/2, cbY + cbH/2, 0);
-[[-0.08,-0.12],[0.08,-0.12],[-0.08,0.12],[0.08,0.12],[0,0]].forEach(([by,bz]) => {
-    addMesh(carBox, new THREE.CylinderGeometry(0.004, 0.004, cpT+0.008, 8), matBolt, cbX+cbW/2+cpT/2, cbY+cbH/2+by, bz, { rz: Math.PI/2 });
-});
-addMesh(carBox, new THREE.BoxGeometry(0.06, 0.04, 0.08), matCarPlate, cbX, cbY + cbH + 0.022, 0, { castShadow: true });
-bracketGroup.add(carBox);
-
+/* Real Crawler (STEP model) */
 bracketGroup.rotation.y = Math.PI / 2;
 bracketGroup.position.set(0, bracketBaseY, 0);
 rootGroup.add(bracketGroup);
 scene.add(rootGroup);
+
+async function loadStepCrawler() {
+    const loadingText = document.getElementById('loading-text');
+    try {
+        loadingText.textContent = '正在初始化 STEP 解析器...';
+        const occt = await occtimportjs({
+            locateFile: (name) => 'https://cdn.jsdelivr.net/npm/occt-import-js@0.0.22/dist/' + name
+        });
+        loadingText.textContent = '正在下载爬车模型...';
+        const response = await fetch('threedata/A1-crawer.STEP');
+        if (!response.ok) throw new Error('STEP file not found');
+        const buffer = await response.arrayBuffer();
+        loadingText.textContent = '正在解析 STEP 文件...';
+        const result = occt.ReadStepFile(new Uint8Array(buffer), null);
+        loadingText.textContent = '正在构建 3D 网格...';
+        const crawlerGroup = new THREE.Group();
+        crawlerGroup.userData.partName = '正式爬车';
+        for (let i = 0; i < result.meshes.length; i++) {
+            const md = result.meshes[i];
+            const geo = new THREE.BufferGeometry();
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(md.attributes.position.array, 3));
+            if (md.attributes.normal) geo.setAttribute('normal', new THREE.Float32BufferAttribute(md.attributes.normal.array, 3));
+            const index = Uint32Array.from(md.index.array);
+            geo.setIndex(new THREE.BufferAttribute(index, 1));
+            const defaultColor = md.color ? new THREE.Color(md.color[0], md.color[1], md.color[2]) : new THREE.Color(0xcccccc);
+            const defaultMat = new THREE.MeshPhongMaterial({ color: defaultColor, specular: 0 });
+            let materials = [defaultMat];
+            if (md.brep_faces && md.brep_faces.length > 0) {
+                for (const fc of md.brep_faces) {
+                    const c = fc.color ? new THREE.Color(fc.color[0], fc.color[1], fc.color[2]) : defaultColor;
+                    materials.push(new THREE.MeshPhongMaterial({ color: c, specular: 0 }));
+                }
+                const triCount = md.index.array.length / 3;
+                let tri = 0, fi = 0;
+                while (tri < triCount) {
+                    let first = tri, last, mi;
+                    if (fi >= md.brep_faces.length) { last = triCount; mi = 0; }
+                    else if (tri < md.brep_faces[fi].first) { last = md.brep_faces[fi].first; mi = 0; }
+                    else { last = md.brep_faces[fi].last + 1; mi = fi + 1; fi++; }
+                    geo.addGroup(first * 3, (last - first) * 3, mi);
+                    tri = last;
+                }
+            }
+            const mesh = new THREE.Mesh(geo, materials.length > 1 ? materials : materials[0]);
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            crawlerGroup.add(mesh);
+        }
+        crawlerGroup.scale.set(0.001, 0.001, 0.001);
+        crawlerGroup.rotation.y = Math.PI / 2;
+        const box = new THREE.Box3().setFromObject(crawlerGroup);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        crawlerGroup.position.set(
+            -L/2 - size.x/2 - 0.005 + 0.01 - center.x,
+            -center.y + size.y * 0.02 + 0.07,
+            -center.z
+        );
+        bracketGroup.add(crawlerGroup);
+        document.getElementById('loading-overlay').style.display = 'none';
+    } catch (err) {
+        console.error('STEP load error:', err);
+        loadingText.textContent = '爬车模型加载失败，使用替代模型';
+        const matBody = new THREE.MeshStandardMaterial({ color: 0x3a3a3a, metalness: 0.6, roughness: 0.4 });
+        const g = new THREE.Group(); g.userData.partName = '爬车 (替代)';
+        const cbW2 = 0.25, cbD2 = 0.35, cbH2 = 0.20, cbX2 = -L/2 - cbW2/2;
+        addMesh(g, new THREE.BoxGeometry(cbW2, cbH2, cbD2), matBody, cbX2, -0.025 + cbH2/2, 0, { castShadow: true });
+        bracketGroup.add(g);
+        setTimeout(() => { document.getElementById('loading-overlay').style.display = 'none'; }, 1500);
+    }
+}
+loadStepCrawler();
 
 /* ========== Labels ========== */
 function makeLabel(text, px, py, pz, color) {
@@ -399,7 +460,7 @@ function makeLabel(text, px, py, pz, color) {
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道+圆环', pipeR + 0.18, 0.3, 0.40, '#7f8c8d'));
-rootGroup.add(makeLabel('支架+爬车盒', 0.10, bracketBaseY + beamY + 0.04, 0.10, '#2980b9'));
+rootGroup.add(makeLabel('支架+正式爬车', 0.10, bracketBaseY + beamY + 0.04, 0.10, '#2980b9'));
 
 /* ========== Ground ========== */
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(6, 6),

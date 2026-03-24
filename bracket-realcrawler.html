@@ -600,14 +600,15 @@ async function loadStepCrawler() {
         }
 
         crawlerGroup.scale.set(0.001, 0.001, 0.001);
+        crawlerGroup.rotation.y = Math.PI / 2;
 
         const box = new THREE.Box3().setFromObject(crawlerGroup);
         const center = box.getCenter(new THREE.Vector3());
         const size = box.getSize(new THREE.Vector3());
 
         crawlerGroup.position.set(
-            -L/2 - size.x/2 - 0.005 - center.x,
-            -center.y + size.y * 0.02,
+            -L/2 - size.x/2 - 0.005 + 0.01 - center.x,
+            -center.y + size.y * 0.02 + 0.07,
             -center.z
         );
 
