@@ -364,6 +364,7 @@ addMesh(carBox, new THREE.BoxGeometry(cpT, cbH*0.9, cbD*0.9), matCarPlate, cbX +
 addMesh(carBox, new THREE.BoxGeometry(0.06, 0.04, 0.08), matCarPlate, cbX, cbY + cbH + 0.022, 0, { castShadow: true });
 bracketGroup.add(carBox);
 
+bracketGroup.rotation.y = Math.PI / 2;
 bracketGroup.position.set(0, bracketBaseY, 0);
 rootGroup.add(bracketGroup);
 scene.add(rootGroup);
