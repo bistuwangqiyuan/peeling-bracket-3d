@@ -192,45 +192,47 @@ trackPositions.forEach(zPos => {
         trackGroup.add(seg);
     }
 
-    const teethCount = 60;
-    for (let i = 0; i < teethCount; i++) {
-        const angle = (i / teethCount) * Math.PI * 2;
-        const toothR = pipeR + trackH;
-        const tooth = new THREE.Mesh(
-            new THREE.BoxGeometry(0.012, 0.008, trackW * 0.85), matTooth
-        );
-        tooth.position.set(Math.cos(angle) * toothR, Math.sin(angle) * toothR, zPos);
-        tooth.rotation.z = angle;
-        trackGroup.add(tooth);
-    }
-
 });
 
 const ringR = 0.640, ringThick = 0.002, ringWidth = 0.20;
 const matRing = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.85, roughness: 0.12, side: THREE.DoubleSide });
 
+const slotW = 0.005, toothW = 0.020, toothH = 0.030;
+const pitch = slotW + toothW;
+const circumf = 2 * Math.PI * ringR;
+const toothCount = Math.floor(circumf / pitch);
+
 trackPositions.forEach(zPos => {
-    const outerRing = new THREE.Mesh(
+    const baseOuter = new THREE.Mesh(
         new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 64, 1, true), matRing
     );
-    outerRing.rotation.x = Math.PI / 2;
-    outerRing.position.z = zPos;
-    outerRing.castShadow = true;
-    trackGroup.add(outerRing);
+    baseOuter.rotation.x = Math.PI / 2; baseOuter.position.z = zPos; baseOuter.castShadow = true;
+    trackGroup.add(baseOuter);
 
-    const innerRing = new THREE.Mesh(
+    const baseInner = new THREE.Mesh(
         new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 64, 1, true), matRing
     );
-    innerRing.rotation.x = Math.PI / 2;
-    innerRing.position.z = zPos;
-    trackGroup.add(innerRing);
+    baseInner.rotation.x = Math.PI / 2; baseInner.position.z = zPos;
+    trackGroup.add(baseInner);
 
     [-1, 1].forEach(s => {
         const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 64), matRing);
-        cap.position.z = zPos + s * ringWidth / 2;
-        if (s < 0) cap.rotation.y = Math.PI;
+        cap.position.z = zPos + s * ringWidth / 2; if (s < 0) cap.rotation.y = Math.PI;
         trackGroup.add(cap);
     });
+
+    for (let i = 0; i < toothCount; i++) {
+        const angle = (i / toothCount) * Math.PI * 2;
+        const tR = ringR + ringThick/2 + toothH / 2;
+        const arcW = (toothW / circumf) * 2 * Math.PI * tR;
+        const tooth = new THREE.Mesh(
+            new THREE.BoxGeometry(arcW, toothH, ringWidth), matTooth
+        );
+        tooth.position.set(Math.cos(angle) * tR, Math.sin(angle) * tR, zPos);
+        tooth.rotation.z = angle;
+        tooth.castShadow = true;
+        trackGroup.add(tooth);
+    }
 });
 
 rootGroup.add(trackGroup);
