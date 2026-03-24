@@ -126,7 +126,7 @@ scene.add(new THREE.DirectionalLight(0xfff0e0, 0.2).translateZ(-4).translateY(1)
 const matPipe = new THREE.MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0.85, roughness: 0.15, side: THREE.DoubleSide });
 const matPipeInner = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.7, roughness: 0.3, side: THREE.BackSide });
 const matTrack = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.25 });
-const matTooth = new THREE.MeshStandardMaterial({ color: 0x666666, metalness: 0.75, roughness: 0.3 });
+const matSlot = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.3, roughness: 0.9 });
 const matRing = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.85, roughness: 0.12, side: THREE.DoubleSide });
 const matAluminum = new THREE.MeshStandardMaterial({ color: 0xe2e2ea, metalness: 0.90, roughness: 0.10 });
 const matGroove = new THREE.MeshStandardMaterial({ color: 0xc0c0cc, metalness: 0.82, roughness: 0.18 });
@@ -191,7 +191,7 @@ rootGroup.add(pipeGroup);
 /* 2. TRACKS + RINGS (from pipe.html)                               */
 /* ================================================================ */
 const trackW = 0.200, trackH = 0.010;
-const trackPositions = [-0.35, 0.35];
+const trackPositions = [-0.40, 0.40];
 
 trackPositions.forEach(zPos => {
     const segs = 80;
@@ -203,34 +203,41 @@ trackPositions.forEach(zPos => {
         seg.rotation.z = aMid; seg.castShadow = true;
         trackGroup.add(seg);
     }
-    const teethCount = 60;
-    for (let i = 0; i < teethCount; i++) {
-        const angle = (i / teethCount) * Math.PI * 2;
-        const tooth = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.008, trackW * 0.85), matTooth);
-        tooth.position.set(Math.cos(angle) * (pipeR + trackH), Math.sin(angle) * (pipeR + trackH), zPos);
-        tooth.rotation.z = angle;
-        trackGroup.add(tooth);
-    }
 });
 
-const ringR = 0.640, ringThick = 0.002, ringWidth = 0.20;
+const ringR = 0.640, ringThick = 0.006, ringWidth = 0.20;
+const slotW = 0.005, slotL = 0.030, slotGap = 0.010, slotDepth = 0.002;
+const circumf = 2 * Math.PI * ringR;
+const slotCount = Math.round(circumf / (slotW + slotGap));
+const slotAngle = (2 * Math.PI) / slotCount;
+const slotR = ringR + ringThick / 2 - slotDepth / 2;
+
 trackPositions.forEach(zPos => {
-    const or2 = new THREE.Mesh(new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 64, 1, true), matRing);
+    const or2 = new THREE.Mesh(new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 128, 1, true), matRing);
     or2.rotation.x = Math.PI / 2; or2.position.z = zPos; or2.castShadow = true; trackGroup.add(or2);
-    const ir2 = new THREE.Mesh(new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 64, 1, true), matRing);
+    const ir2 = new THREE.Mesh(new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 128, 1, true), matRing);
     ir2.rotation.x = Math.PI / 2; ir2.position.z = zPos; trackGroup.add(ir2);
     [-1, 1].forEach(s => {
-        const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 64), matRing);
+        const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 128), matRing);
         cap.position.z = zPos + s * ringWidth / 2; if (s < 0) cap.rotation.y = Math.PI; trackGroup.add(cap);
     });
+
+    const slotGeo = new THREE.BoxGeometry(slotW, slotDepth + 0.001, slotL);
+    for (let i = 0; i < slotCount; i++) {
+        const angle = i * slotAngle;
+        const slot = new THREE.Mesh(slotGeo, matSlot);
+        slot.position.set(Math.cos(angle) * slotR, Math.sin(angle) * slotR, zPos);
+        slot.rotation.z = angle;
+        trackGroup.add(slot);
+    }
 });
 rootGroup.add(trackGroup);
 
 /* ================================================================ */
 /* 3. BRACKET + CAR BOX (from bracket-carbox.html)                  */
-/*    Positioned at pipe top + 20mm gap                             */
+/*    Positioned so support wheels rest on pipe top surface          */
 /* ================================================================ */
-const bracketBaseY = pipeR + 0.02;
+const bracketBaseY = pipeR + 0.062;
 
 const P = 0.03, L = 0.6, W = 0.12, H = 0.30;
 
@@ -351,7 +358,7 @@ function makeSupportWheel(px, pz) {
 
 /* Car Drive Box */
 const cbW = 0.25, cbD = 0.35, cbH = 0.20;
-const cbX = -L/2 - cbW/2, cbY = 0;
+const cbX = -L/2 - cbW/2, cbY = -0.025;
 const carBox = new THREE.Group(); carBox.userData.partName = '爬车驱动盒';
 addMesh(carBox, new THREE.BoxGeometry(cbW, cbH, cbD), matCarBody, cbX, cbY + cbH/2, 0, { castShadow: true });
 addMesh(carBox, new THREE.BoxGeometry(cbW + 0.01, 0.004, cbD + 0.01), matCarPlate, cbX, cbY + cbH, 0);
@@ -389,7 +396,7 @@ function makeLabel(text, px, py, pz, color) {
 }
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
-rootGroup.add(makeLabel('爬行轨道+圆环', pipeR + 0.18, 0.3, 0.35, '#7f8c8d'));
+rootGroup.add(makeLabel('爬行轨道+圆环', pipeR + 0.18, 0.3, 0.40, '#7f8c8d'));
 rootGroup.add(makeLabel('支架+爬车盒', 0.10, bracketBaseY + beamY + 0.04, 0.10, '#2980b9'));
 
 /* ========== Ground ========== */

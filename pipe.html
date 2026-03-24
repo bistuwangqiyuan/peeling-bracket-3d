@@ -52,10 +52,11 @@ canvas{display:block}
     <div class="info-row"><span class="lbl">厚度</span><span class="val">2 mm</span></div>
     <div class="info-row"><span class="lbl">宽度</span><span class="val">200 mm</span></div>
     <div class="info-row"><span class="lbl">数量</span><span class="val">2 个</span></div>
-    <div class="section-title">齿轮槽</div>
-    <div class="info-row"><span class="lbl">槽宽</span><span class="val">5 mm</span></div>
-    <div class="info-row"><span class="lbl">槽深</span><span class="val">30 mm</span></div>
-    <div class="info-row"><span class="lbl">槽间距</span><span class="val">20 mm</span></div>
+    <div class="section-title">齿轮长方形孔</div>
+    <div class="info-row"><span class="lbl">孔宽</span><span class="val">5 mm</span></div>
+    <div class="info-row"><span class="lbl">孔长</span><span class="val">30 mm</span></div>
+    <div class="info-row"><span class="lbl">孔深</span><span class="val">2 mm</span></div>
+    <div class="info-row"><span class="lbl">孔间距</span><span class="val">10 mm</span></div>
 </div>
 
 <div id="sel-bar">
@@ -129,7 +130,7 @@ scene.add(new THREE.DirectionalLight(0xfff0e0, 0.2).translateZ(-4).translateY(1)
 const matPipe = new THREE.MeshStandardMaterial({ color: 0xc8c8c8, metalness: 0.85, roughness: 0.15, side: THREE.DoubleSide });
 const matPipeInner = new THREE.MeshStandardMaterial({ color: 0xa0a0a0, metalness: 0.7, roughness: 0.3, side: THREE.BackSide });
 const matTrack = new THREE.MeshStandardMaterial({ color: 0x555555, metalness: 0.8, roughness: 0.25 });
-const matTooth = new THREE.MeshStandardMaterial({ color: 0x666666, metalness: 0.75, roughness: 0.3 });
+const matSlot = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.3, roughness: 0.9 });
 const matBolt = new THREE.MeshStandardMaterial({ color: 0x444444, metalness: 0.85, roughness: 0.18 });
 
 function addMesh(parent, geo, mat, x, y, z, opts) {
@@ -198,44 +199,41 @@ trackPositions.forEach(zPos => {
 
 });
 
-const ringR = 0.640, ringThick = 0.002, ringWidth = 0.20;
+const ringR = 0.640, ringThick = 0.006, ringWidth = 0.20;
 const matRing = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.85, roughness: 0.12, side: THREE.DoubleSide });
 
-const slotW = 0.005, toothW = 0.020, toothH = 0.030;
-const pitch = slotW + toothW;
+const slotW = 0.005, slotL = 0.030, slotGap = 0.010, slotDepth = 0.002;
 const circumf = 2 * Math.PI * ringR;
-const toothCount = Math.floor(circumf / pitch);
+const slotCount = Math.round(circumf / (slotW + slotGap));
+const slotAngle = (2 * Math.PI) / slotCount;
+const slotR = ringR + ringThick / 2 - slotDepth / 2;
 
 trackPositions.forEach(zPos => {
     const baseOuter = new THREE.Mesh(
-        new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 64, 1, true), matRing
+        new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 128, 1, true), matRing
     );
     baseOuter.rotation.x = Math.PI / 2; baseOuter.position.z = zPos; baseOuter.castShadow = true;
     trackGroup.add(baseOuter);
 
     const baseInner = new THREE.Mesh(
-        new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 64, 1, true), matRing
+        new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 128, 1, true), matRing
     );
     baseInner.rotation.x = Math.PI / 2; baseInner.position.z = zPos;
     trackGroup.add(baseInner);
 
     [-1, 1].forEach(s => {
-        const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 64), matRing);
+        const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 128), matRing);
         cap.position.z = zPos + s * ringWidth / 2; if (s < 0) cap.rotation.y = Math.PI;
         trackGroup.add(cap);
     });
 
-    for (let i = 0; i < toothCount; i++) {
-        const angle = (i / toothCount) * Math.PI * 2;
-        const tR = ringR + ringThick/2 + toothH / 2;
-        const arcW = (toothW / circumf) * 2 * Math.PI * tR;
-        const tooth = new THREE.Mesh(
-            new THREE.BoxGeometry(arcW, toothH, ringWidth), matTooth
-        );
-        tooth.position.set(Math.cos(angle) * tR, Math.sin(angle) * tR, zPos);
-        tooth.rotation.z = angle;
-        tooth.castShadow = true;
-        trackGroup.add(tooth);
+    const slotGeo = new THREE.BoxGeometry(slotW, slotDepth + 0.001, slotL);
+    for (let i = 0; i < slotCount; i++) {
+        const angle = i * slotAngle;
+        const slot = new THREE.Mesh(slotGeo, matSlot);
+        slot.position.set(Math.cos(angle) * slotR, Math.sin(angle) * slotR, zPos);
+        slot.rotation.z = angle;
+        trackGroup.add(slot);
     }
 });
 
