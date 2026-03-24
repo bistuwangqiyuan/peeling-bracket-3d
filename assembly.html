@@ -47,6 +47,11 @@ canvas{display:block}
     <div class="info-row"><span class="lbl">轨道数量</span><span class="val">2 道环轨</span></div>
     <div class="info-row"><span class="lbl">轨道宽度</span><span class="val">200 mm (板型)</span></div>
     <div class="info-row"><span class="lbl">轨道间距</span><span class="val">700 mm</span></div>
+    <div class="section-title">钢制圆环</div>
+    <div class="info-row"><span class="lbl">直径</span><span class="val">1280 mm</span></div>
+    <div class="info-row"><span class="lbl">厚度</span><span class="val">2 mm</span></div>
+    <div class="info-row"><span class="lbl">宽度</span><span class="val">200 mm</span></div>
+    <div class="info-row"><span class="lbl">数量</span><span class="val">2 个</span></div>
 </div>
 
 <div id="sel-bar">
@@ -201,6 +206,34 @@ trackPositions.forEach(zPos => {
     }
 
 });
+
+const ringR = 0.640, ringThick = 0.002, ringWidth = 0.20;
+const matRing = new THREE.MeshStandardMaterial({ color: 0x999999, metalness: 0.85, roughness: 0.12, side: THREE.DoubleSide });
+
+trackPositions.forEach(zPos => {
+    const outerRing = new THREE.Mesh(
+        new THREE.CylinderGeometry(ringR + ringThick/2, ringR + ringThick/2, ringWidth, 64, 1, true), matRing
+    );
+    outerRing.rotation.x = Math.PI / 2;
+    outerRing.position.z = zPos;
+    outerRing.castShadow = true;
+    trackGroup.add(outerRing);
+
+    const innerRing = new THREE.Mesh(
+        new THREE.CylinderGeometry(ringR - ringThick/2, ringR - ringThick/2, ringWidth, 64, 1, true), matRing
+    );
+    innerRing.rotation.x = Math.PI / 2;
+    innerRing.position.z = zPos;
+    trackGroup.add(innerRing);
+
+    [-1, 1].forEach(s => {
+        const cap = new THREE.Mesh(new THREE.RingGeometry(ringR - ringThick/2, ringR + ringThick/2, 64), matRing);
+        cap.position.z = zPos + s * ringWidth / 2;
+        if (s < 0) cap.rotation.y = Math.PI;
+        trackGroup.add(cap);
+    });
+});
+
 rootGroup.add(trackGroup);
 
 scene.add(rootGroup);
@@ -226,6 +259,7 @@ function makeLabel(text, px, py, pz, color) {
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
 rootGroup.add(makeLabel('爬行轨道 (200mm板型)', pipeR + 0.18, 0.3, 0.35, '#7f8c8d'));
+rootGroup.add(makeLabel('钢制圆环 D1280×W200', ringR + 0.12, 0.15, -0.35, '#555'));
 
 /* ========== Ground ========== */
 const ground = new THREE.Mesh(
