@@ -46,12 +46,16 @@ canvas{display:block}
     <div class="section-title">爬行轨道</div>
     <div class="info-row"><span class="lbl">轨道数量</span><span class="val">2 道环轨</span></div>
     <div class="info-row"><span class="lbl">轨道宽度</span><span class="val">200 mm (板型)</span></div>
-    <div class="info-row"><span class="lbl">轨道间距</span><span class="val">700 mm</span></div>
+    <div class="info-row"><span class="lbl">轨道间距</span><span class="val">800 mm</span></div>
     <div class="section-title">钢制圆环</div>
     <div class="info-row"><span class="lbl">直径</span><span class="val">1280 mm</span></div>
     <div class="info-row"><span class="lbl">厚度</span><span class="val">2 mm</span></div>
     <div class="info-row"><span class="lbl">宽度</span><span class="val">200 mm</span></div>
     <div class="info-row"><span class="lbl">数量</span><span class="val">2 个</span></div>
+    <div class="section-title">齿轮槽</div>
+    <div class="info-row"><span class="lbl">槽宽</span><span class="val">5 mm</span></div>
+    <div class="info-row"><span class="lbl">槽深</span><span class="val">30 mm</span></div>
+    <div class="info-row"><span class="lbl">槽间距</span><span class="val">20 mm</span></div>
 </div>
 
 <div id="sel-bar">
@@ -171,9 +175,9 @@ pipeGroup.add(innerShell);
 });
 rootGroup.add(pipeGroup);
 
-/* ========== 2. Crawling Tracks (2 flat plate rings, 200mm wide, 70cm apart) ========== */
+/* ========== 2. Crawling Tracks (2 flat plate rings, 200mm wide, 80cm apart) ========== */
 const trackW = 0.200, trackH = 0.010;
-const trackPositions = [-0.35, 0.35];
+const trackPositions = [-0.40, 0.40];
 trackPositions.forEach(zPos => {
     const segs = 80;
     for (let i = 0; i < segs; i++) {
@@ -259,8 +263,8 @@ function makeLabel(text, px, py, pz, color) {
 }
 
 rootGroup.add(makeLabel('DN1200 管道', 0, -0.15, pipeLen/2 + 0.12, '#2c3e50'));
-rootGroup.add(makeLabel('爬行轨道 (200mm板型)', pipeR + 0.18, 0.3, 0.35, '#7f8c8d'));
-rootGroup.add(makeLabel('钢制圆环 D1280×W200', ringR + 0.12, 0.15, -0.35, '#555'));
+rootGroup.add(makeLabel('爬行轨道 (200mm板型)', pipeR + 0.18, 0.3, 0.40, '#7f8c8d'));
+rootGroup.add(makeLabel('钢制圆环 D1280×W200', ringR + 0.12, 0.15, -0.40, '#555'));
 
 /* ========== Ground ========== */
 const ground = new THREE.Mesh(
