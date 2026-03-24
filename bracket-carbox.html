@@ -563,8 +563,8 @@ addMesh(carBox, new THREE.BoxGeometry(0.004, 0.05, cbD * 0.9), matCarPlate, cbX 
 
 addMesh(carBox, new THREE.BoxGeometry(0.06, 0.04, 0.08), matCarPlate, cbX, cbY + cbH + 0.022, 0, { castShadow: true });
 
-addMesh(carBox, new THREE.CylinderGeometry(0.015, 0.015, 0.03, 16), matCarPlate, cbX - cbW/4, cbY + cbH + 0.04 + 0.015, 0);
-addMesh(carBox, new THREE.CylinderGeometry(0.005, 0.005, 0.02, 8), matBolt, cbX - cbW/4, cbY + cbH + 0.04 + 0.035, 0);
+addMesh(carBox, new THREE.CylinderGeometry(0.015, 0.015, 0.03, 16), matCarPlate, cbX, cbY + cbH + 0.04 + 0.015, 0);
+addMesh(carBox, new THREE.CylinderGeometry(0.005, 0.005, 0.02, 8), matBolt, cbX, cbY + cbH + 0.04 + 0.035, 0);
 
 addMesh(carBox, new THREE.BoxGeometry(0.04, 0.025, 0.06), matCarPlate, cbX + cbW * 0.3, cbY - 0.015, 0, { castShadow: true });
 
